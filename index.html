@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RealScene | Natural Prompt Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0c;
+            color: #e5e5e5;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .output-box {
+            background: #141416;
+            border: 1px solid #2a2a2d;
+        }
+        .tag {
+            background: #1f1f23;
+            border: 1px solid #333;
+        }
+        .generate-btn {
+            background: #fff;
+            color: #000;
+            font-weight: 600;
+        }
+        .generate-btn:hover {
+            background: #ddd;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto space-y-6">
+        
+        <div class="text-center space-y-2 mb-8">
+            <h1 class="text-3xl font-light">RealScene</h1>
+            <p class="text-gray-500 text-sm">Describe the moment. Get a complete, realistic scene.</p>
+        </div>
+
+        <div class="glass rounded-2xl p-6 space-y-4">
+            <label class="block text-sm font-medium text-gray-400">Describe your scene:</label>
+            <textarea 
+                id="input" 
+                rows="3"
+                placeholder="Ebony goddess lounging in bed watching TV and scrolling on her phone..."
+                class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder-gray-600 focus:outline-none focus:border-white/30 resize-none"
+            ></textarea>
+            <button onclick="buildPrompt()" class="generate-btn w-full py-3 rounded-xl">
+                Generate Realistic Prompt
+            </button>
+        </div>
+
+        <div id="results" class="hidden space-y-4">
+            
+            <div class="output-box rounded-2xl p-6">
+                <div class="flex justify-between items-center mb-4 pb-4 border-b border-white/10">
+                    <span class="text-xs text-gray-500 uppercase">Generated Prompt</span>
+                    <button onclick="copyToClipboard()" class="text-xs text-gray-400 hover:text-white flex items-center gap-2" id="copyBtn">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                        </svg>
+                        Copy
+                    </button>
+                </div>
+                <textarea id="output" readonly class="w-full bg-transparent border-none resize-none text-sm leading-relaxed text-gray-300 focus:outline-none" rows="4"></textarea>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-4 text-sm">
+                <div class="glass rounded-xl p-4">
+                    <h3 class="text-xs text-gray-500 uppercase mb-3">Subject</h3>
+                    <div id="subjectTags" class="flex flex-wrap gap-2"></div>
+                </div>
+                <div class="glass rounded-xl p-4">
+                    <h3 class="text-xs text-gray-500 uppercase mb-3">Complete Outfit</h3>
+                    <div id="wardrobeTags" class="flex flex-wrap gap-2"></div>
+                </div>
+                <div class="glass rounded-xl p-4">
+                    <h3 class="text-xs text-gray-500 uppercase mb-3">Setting</h3>
+                    <div id="envTags" class="flex flex-wrap gap-2"></div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        const outfits = {
+            casual: [
+                { top: 'oversized graphic t-shirt', bottom: 'grey cotton leggings', desc: 'loose tee and leggings' },
+                { top: 'cream colored hoodie', bottom: 'black joggers', desc: 'hoodie and joggers' },
+                { top: 'white tank top', bottom: 'blue denim shorts', desc: 'tank and shorts' },
+                { top: 'striped long sleeve shirt', bottom: 'soft lounge pants', desc: 'long sleeve and pants' },
+                { top: 'black oversized sweater', bottom: 'grey sweatpants', desc: 'sweater and sweats' }
+            ],
+            sleep: [
+                { top: 'silk camisole', bottom: 'matching silk shorts', desc: 'silk cami and shorts set' },
+                { top: 'cotton sleep shirt', bottom: 'plaid pajama pants', desc: 'sleep shirt and pants' },
+                { top: 'ribbed tank top', bottom: 'soft boxer shorts', desc: 'tank and shorts' },
+                { top: 'oversized sleep tee', bottom: 'cotton shorts', desc: 'big tee and shorts' }
+            ],
+            lounge: [
+                { top: 'matching sports bra', bottom: 'high waist leggings', desc: 'athletic set' },
+                { top: 'cropped hoodie', bottom: 'biker shorts', desc: 'crop hoodie and shorts' },
+                { top: 'wrap top', bottom: 'wide leg lounge pants', desc: 'wrap top and pants' },
+                { top: 'button up pajama shirt', bottom: 'matching pajama pants', desc: 'button up set' }
+            ],
+            cozy: [
+                { top: 'chunky knit sweater', bottom: 'fleece lined leggings', desc: 'knit sweater and fleece leggings' },
+                { top: 'thermal long sleeve', bottom: 'flannel pajama pants', desc: 'thermal and flannel pants' },
+                { top: 'fuzzy fleece pullover', bottom: 'jogger sweatpants', desc: 'fleece and joggers' }
+            ]
+        };
+
+        const locations = {
+            bedroom: {
+                name: 'cozy bedroom',
+                elements: ['unmade bed with white sheets', 'wooden headboard', 'nightstand with lamp', 'warm lamplight', 'throw pillows', 'phone charger on nightstand']
+            },
+            living_room: {
+                name: 'living room',
+                elements: ['plush sectional sofa', 'coffee table', 'television glowing', 'soft overhead lighting', 'throw blanket', 'remote on table']
+            },
+            kitchen: {
+                name: 'kitchen',
+                elements: ['kitchen island', 'bar stool', 'morning light through window', 'coffee mug', 'refrigerator humming']
+            }
+        };
+
+        function getOutfit(context) {
+            let category = 'casual';
+            if (context.includes('bed') || context.includes('sleep')) category = 'sleep';
+            else if (context.includes('lounge') || context.includes('relax')) category = 'lounge';
+            else if (context.includes('cozy') || context.includes('cold')) category = 'cozy';
+            
+            const options = outfits[category];
+            return options[Math.floor(Math.random() * options.length)];
+        }
+
+        function getLocation(input) {
+            const lower = input.toLowerCase();
+            if (lower.includes('bed') || lower.includes('laying down')) return locations.bedroom;
+            if (lower.includes('couch') || lower.includes('sofa') || lower.includes('tv')) return locations.living_room;
+            if (lower.includes('kitchen')) return locations.kitchen;
+            return locations.bedroom;
+        }
+
+        function parseSubject(input) {
+            const lower = input.toLowerCase();
+            let subject = input.split(',')[0].trim();
+            
+            const descriptors = [];
+            if (lower.includes('ebony') || lower.includes('black')) descriptors.push('deep skin tone');
+            if (lower.includes('goddess') || lower.includes('beautiful')) descriptors.push('stunning');
+            if (lower.includes('thick') || lower.includes('curvy')) descriptors.push('voluptuous figure');
+            
+            return { name: subject, descriptors };
+        }
+
+        function buildPrompt() {
+            const input = document.getElementById('input').value.trim();
+            if (!input) return;
+
+            const subject = parseSubject(input);
+            const outfit = getOutfit(input);
+            const location = getLocation(input);
+
+            let activity = 'relaxing';
+            if (input.toLowerCase().includes('phone')) activity = 'scrolling on smartphone';
+            if (input.toLowerCase().includes('tv')) activity += ', watching television';
+            if (input.toLowerCase().includes('read')) activity = 'reading a book';
+
+            const promptParts = [
+                'Candid lifestyle photograph',
+                `of ${subject.name}${subject.descriptors.length ? ', ' + subject.descriptors.join(', ') : ''}`,
+                `wearing ${outfit.desc} (${outfit.top}, ${outfit.bottom})`,
+                `${activity}`,
+                `in ${location.name}`,
+                location.elements.join(', '),
+                'natural lighting, realistic skin texture, 50mm lens, shallow depth of field, photorealistic, 4k'
+            ];
+
+            const finalPrompt = promptParts.join(', ') + '.';
+
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('output').value = finalPrompt;
+            
+            document.getElementById('subjectTags').innerHTML = `<span class="tag px-3 py-1.5 rounded-lg text-xs text-gray-300">${subject.name}</span>` + 
+                subject.descriptors.map(d => `<span class="tag px-3 py-1.5 rounded-lg text-xs text-gray-300">${d}</span>`).join('');
+            
+            document.getElementById('wardrobeTags').innerHTML = 
+                `<span class="tag px-3 py-1.5 rounded-lg text-xs text-gray-300">${outfit.top}</span>` +
+                `<span class="tag px-3 py-1.5 rounded-lg text-xs text-gray-300">${outfit.bottom}</span>`;
+            
+            document.getElementById('envTags').innerHTML = location.elements.map(e => 
+                `<span class="tag px-3 py-1.5 rounded-lg text-xs text-gray-300">${e}</span>`
+            ).join('');
+        }
+
+        function copyToClipboard() {
+            const copyText = document.getElementById("output");
+            const copyBtn = document.getElementById("copyBtn");
+            
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            
+            try {
+                navigator.clipboard.writeText(copyText.value).then(function() {
+                    copyBtn.innerHTML = `
+                        <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span class="text-green-400">Copied!</span>
+                    `;
+                    setTimeout(function() {
+                        copyBtn.innerHTML = `
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                            </svg>
+                            Copy
+                        `;
+                    }, 2000);
+                });
+            } catch (err) {
+                document.execCommand("copy");
+                copyBtn.innerHTML = `
+                    <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span class="text-green-400">Copied!</span>
+                `;
+                setTimeout(function() {
+                    copyBtn.innerHTML = `
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+                        </svg>
+                        Copy
+                    `;
+                }, 2000);
+            }
+        }
+    </script>
+</body>
+</html>
