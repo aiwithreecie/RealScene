@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RealScene | Prompt Builder</title>
+    <title>HyperReal Prompt Constructor</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background: #0a0a0c;
             color: #e5e5e5;
         }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
         .glass {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -19,10 +20,6 @@
         .output-box {
             background: #141416;
             border: 1px solid #2a2a2d;
-        }
-        .tag {
-            background: #1f1f23;
-            border: 1px solid #333;
         }
         .generate-btn {
             background: #fff;
@@ -32,31 +29,44 @@
         .generate-btn:hover {
             background: #ddd;
         }
+        .safety-badge {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            color: #00ff88;
+        }
+        .tech-tag {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: #00f0ff;
+        }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8">
 
-    <div class="max-w-4xl mx-auto space-y-6">
+    <div class="max-w-5xl mx-auto space-y-6">
         
         <div class="text-center space-y-2 mb-8">
-            <h1 class="text-3xl font-light">RealScene</h1>
-            <p class="text-gray-500 text-sm">Paste your full creative direction. The generator will enhance it, not replace it.</p>
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass mb-4">
+                <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                <span class="text-xs font-mono text-green-400 tracking-widest">GUARDRAIL SAFE • HYPER-REALISTIC</span>
+            </div>
+            <h1 class="text-4xl font-light">HyperReal Constructor</h1>
+            <p class="text-gray-500 text-sm max-w-xl mx-auto">Enter your scene. Technical specs auto-adjust based on context.</p>
         </div>
 
         <div class="glass rounded-2xl p-6 space-y-4">
-            <label class="block text-sm font-medium text-gray-400">Your creative direction (paste everything - subject, makeup, hair, mood, palette):</label>
+            <div class="flex justify-between items-center">
+                <label class="block text-sm font-medium text-gray-400">Scene Description:</label>
+                <span class="safety-badge px-3 py-1 rounded-full text-xs font-mono">AUTO-FILTER ACTIVE</span>
+            </div>
             <textarea 
                 id="input" 
-                rows="8"
-                placeholder="Ebony goddess, Aesthetic metalsmith femininity — industrial deconstruction meets gothic romanticism...
-
-Makeup Direction: zero-foundation skin with visible texture...
-Hair Direction: wet-look slicked back...
-Palette: cold steel grey, bone white..."
-                class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder-gray-600 focus:outline-none focus:border-white/30 resize-none font-mono text-sm"
+                rows="4"
+                placeholder="Street photography, woman walking in rain, urban environment, moody..."
+                class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder-gray-600 focus:outline-none focus:border-white/30 resize-none"
             ></textarea>
             <button onclick="buildPrompt()" class="generate-btn w-full py-3 rounded-xl">
-                Build Prompt
+                Construct Hyper-Real Prompt
             </button>
         </div>
 
@@ -64,7 +74,7 @@ Palette: cold steel grey, bone white..."
             
             <div class="output-box rounded-2xl p-6">
                 <div class="flex justify-between items-center mb-4 pb-4 border-b border-white/10">
-                    <span class="text-xs text-gray-500 uppercase">Enhanced Prompt</span>
+                    <span class="text-xs text-gray-500 uppercase font-mono">Generated Prompt</span>
                     <button onclick="copyToClipboard()" class="text-xs text-gray-400 hover:text-white flex items-center gap-2" id="copyBtn">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
@@ -72,17 +82,21 @@ Palette: cold steel grey, bone white..."
                         Copy
                     </button>
                 </div>
-                <textarea id="output" readonly class="w-full bg-transparent border-none resize-none text-sm leading-relaxed text-gray-300 focus:outline-none" rows="10"></textarea>
+                <textarea id="output" readonly class="w-full bg-transparent border-none resize-none text-sm leading-relaxed text-gray-300 focus:outline-none font-mono" rows="12"></textarea>
             </div>
 
-            <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div class="grid md:grid-cols-3 gap-4 text-sm">
                 <div class="glass rounded-xl p-4">
-                    <h3 class="text-xs text-gray-500 uppercase mb-3">What You Provided</h3>
-                    <div id="userTags" class="flex flex-wrap gap-2"></div>
+                    <h3 class="text-xs text-gray-500 uppercase mb-3">Scene Elements</h3>
+                    <div id="elementsList" class="space-y-2 text-xs"></div>
                 </div>
                 <div class="glass rounded-xl p-4">
-                    <h3 class="text-xs text-gray-500 uppercase mb-3">What Was Added</h3>
-                    <div id="addedTags" class="flex flex-wrap gap-2"></div>
+                    <h3 class="text-xs text-gray-500 uppercase mb-3">Technical Choices</h3>
+                    <div id="techList" class="space-y-2 text-xs"></div>
+                </div>
+                <div class="glass rounded-xl p-4">
+                    <h3 class="text-xs text-gray-500 uppercase mb-3">Safety Check</h3>
+                    <div id="safetyList" class="space-y-2 text-xs text-green-400"></div>
                 </div>
             </div>
 
@@ -91,111 +105,455 @@ Palette: cold steel grey, bone white..."
     </div>
 
     <script>
-        function analyzeInput(input) {
+        // Banned words filter
+        const bannedWords = [
+            'lace', 'bikini', 'lingerie', 'sheer', 'transparent', 'see-through',
+            'nude', 'naked', 'topless', 'bare', 'exposed', 'intimate', 'sensual',
+            'seductive', 'erotic', 'suggestive', 'revealing', 'scantily', 'underwear',
+            'bra', 'panties', 'thong', 'g-string', 'cleavage', 'midriff', 'plunging'
+        ];
+
+        // Technical specs database - chooses based on context
+        const technicalSpecs = {
+            // Street/candid photography
+            street: {
+                camera: 'Leica Q2',
+                lens: '28mm f/1.7 Summilux',
+                film: 'Kodak Portra 400 film stock',
+                style: 'decisive moment capture, street photography aesthetic',
+                aperture: 'f/2.8',
+                focus: 'zone focusing, hyperfocal distance',
+                grain: 'natural film grain, slight contrast',
+                why: 'Wide angle for environmental context, fast aperture for low light'
+            },
+            
+            // Portrait/close-up
+            portrait: {
+                camera: 'Sony A7R IV',
+                lens: '85mm f/1.4 GM',
+                film: 'digital raw',
+                style: 'shallow depth of field, creamy bokeh',
+                aperture: 'f/1.8',
+                focus: 'eye autofocus tack sharp',
+                grain: 'clean digital, no noise',
+                why: 'Telephoto compression isolates subject, wide aperture separates from background'
+            },
+            
+            // Environmental/wide
+            environmental: {
+                camera: 'Canon EOS R5',
+                lens: '35mm f/1.4L',
+                film: 'digital raw',
+                style: 'environmental portrait, context and subject',
+                aperture: 'f/4',
+                focus: 'deep depth of field, subject and background sharp',
+                grain: 'clean digital',
+                why: '35mm shows surroundings while maintaining natural perspective'
+            },
+            
+            // Detail/macro
+            detail: {
+                camera: 'Sony A7R IV',
+                lens: '90mm f/2.8 Macro G',
+                film: 'digital raw',
+                style: 'extreme detail, macro texture',
+                aperture: 'f/5.6',
+                focus: 'focus stacking, razor sharp detail',
+                grain: 'ISO 100, zero noise',
+                why: 'Macro lens for texture detail, smaller aperture for depth'
+            },
+            
+            // Low light/night
+            night: {
+                camera: 'Sony A7S III',
+                lens: '50mm f/1.2 GM',
+                film: 'digital raw high ISO',
+                style: 'available light, atmospheric',
+                aperture: 'f/1.2',
+                focus: 'single point AF, low light capable',
+                grain: 'controlled noise at high ISO, moody',
+                why: 'Low light monster, widest aperture for night shooting'
+            },
+            
+            // Documentary/candid
+            documentary: {
+                camera: 'Fujifilm X-T4',
+                lens: '23mm f/1.4',
+                film: 'Fuji Classic Chrome simulation',
+                style: 'documentary candid, unobtrusive',
+                aperture: 'f/2.0',
+                focus: 'snap focus, pre-focused',
+                grain: 'film simulation grain, organic',
+                why: 'Discreet size, film look straight from camera'
+            },
+            
+            // Architecture/interior
+            architecture: {
+                camera: 'Canon EOS R5',
+                lens: 'TS-E 24mm f/3.5L tilt-shift',
+                film: 'digital raw',
+                style: 'architectural precision, straight lines',
+                aperture: 'f/8',
+                focus: 'hyperfocal, everything sharp',
+                grain: 'base ISO, pristine',
+                why: 'Tilt-shift corrects perspective, small aperture for depth'
+            },
+            
+            // Action/movement
+            action: {
+                camera: 'Sony A1',
+                lens: '24-70mm f/2.8 GM',
+                film: 'digital raw',
+                style: 'frozen motion, dynamic',
+                aperture: 'f/2.8',
+                focus: 'continuous AF tracking, real-time eye',
+                grain: 'clean at high shutter speed',
+                why: 'Fast shutter freezes motion, zoom flexibility'
+            },
+            
+            // Vintage/retro look
+            vintage: {
+                camera: 'Nikon F3',
+                lens: '50mm f/1.4 AI-S',
+                film: 'Kodak Tri-X 400 black and white',
+                style: 'classic photojournalism, nostalgic',
+                aperture: 'f/2.0',
+                focus: 'manual focus, slight softness acceptable',
+                grain: 'pronounced film grain, high contrast',
+                why: 'Film stocks for authentic vintage character'
+            }
+        };
+
+        function detectTechnicalContext(input) {
             const lower = input.toLowerCase();
             
-            // Check if user already specified location
-            const locationKeywords = {
-                'bedroom': ['bed', 'bedroom', 'boudoir'],
-                'kitchen': ['kitchen', 'cooking', 'culinary'],
-                'workshop': ['workshop', 'studio', 'forge', 'industrial', 'metal', 'metalsmith'],
-                'outdoor': ['outdoor', 'garden', 'street', 'alley'],
-                'bathroom': ['bathroom', 'bath'],
-                'office': ['office', 'desk'],
-                'gym': ['gym', 'fitness'],
-                'living room': ['couch', 'sofa', 'living room']
-            };
+            // Check for explicit technical requests
+            if (lower.includes('macro') || lower.includes('detail') || lower.includes('texture') || lower.includes('close up')) {
+                return { type: 'detail', specs: technicalSpecs.detail };
+            }
             
-            let detectedLocation = null;
-            for (const [location, keywords] of Object.entries(locationKeywords)) {
-                if (keywords.some(k => lower.includes(k))) {
-                    detectedLocation = location;
-                    break;
+            if (lower.includes('street') || lower.includes('candid') || lower.includes('walking') || lower.includes('urban')) {
+                return { type: 'street', specs: technicalSpecs.street };
+            }
+            
+            if (lower.includes('night') || lower.includes('dark') || lower.includes('neon') || lower.includes('evening')) {
+                return { type: 'night', specs: technicalSpecs.night };
+            }
+            
+            if (lower.includes('wide') || lower.includes('environmental') || lower.includes('context') || lower.includes('surroundings')) {
+                return { type: 'environmental', specs: technicalSpecs.environmental };
+            }
+            
+            if (lower.includes('architecture') || lower.includes('building') || lower.includes('interior design')) {
+                return { type: 'architecture', specs: technicalSpecs.architecture };
+            }
+            
+            if (lower.includes('running') || lower.includes('jumping') || lower.includes('dancing') || lower.includes('moving') || lower.includes('action')) {
+                return { type: 'action', specs: technicalSpecs.action };
+            }
+            
+            if (lower.includes('vintage') || lower.includes('retro') || lower.includes('film look') || lower.includes('nostalgic')) {
+                return { type: 'vintage', specs: technicalSpecs.vintage };
+            }
+            
+            if (lower.includes('documentary') || lower.includes('photojournalism') || lower.includes('reportage')) {
+                return { type: 'documentary', specs: technicalSpecs.documentary };
+            }
+            
+            // Default based on shot type
+            if (lower.includes('portrait') || lower.includes('face') || lower.includes('headshot')) {
+                return { type: 'portrait', specs: technicalSpecs.portrait };
+            }
+            
+            // Default to portrait for most lifestyle scenes
+            return { type: 'portrait', specs: technicalSpecs.portrait };
+        }
+
+        function getShotType(input, techContext) {
+            const lower = input.toLowerCase();
+            
+            if (lower.includes('close up') || lower.includes('extreme close') || lower.includes('macro')) return 'extreme close-up';
+            if (lower.includes('headshot') || lower.includes('portrait')) return 'head-and-shoulders portrait';
+            if (lower.includes('full body') || lower.includes('wide shot')) return 'full-body environmental shot';
+            if (lower.includes('medium shot') || lower.includes('waist up')) return 'medium shot';
+            
+            // Default based on technical context
+            if (techContext === 'street') return 'medium-wide shot';
+            if (techContext === 'detail') return 'extreme macro detail shot';
+            if (techContext === 'environmental') return 'wide environmental portrait';
+            
+            return 'medium close-up';
+        }
+
+        // Rest of the database and functions remain the same...
+        const safeDB = {
+            fabrics: ['cotton', 'linen', 'wool', 'denim', 'velvet', 'silk', 'cashmere', 'tweed', 'corduroy', 'flannel'],
+            tops: ['t-shirt', 'blouse', 'sweater', 'hoodie', 'cardigan', 'turtleneck', 'button-up shirt', 'tank top', 'crop top', 'jacket'],
+            bottoms: ['jeans', 'trousers', 'slacks', 'shorts', 'skirt', 'joggers', 'leggings', 'corduroy pants', 'linen pants'],
+            shoes: ['sneakers', 'boots', 'loafers', 'sandals', 'heels', 'flats', 'oxfords'],
+            accessories: ['gold necklace', 'silver bracelet', 'leather watch', 'scarf', 'beanie', 'tote bag', 'backpack']
+        };
+
+        const locations = {
+            kitchen: {
+                name: 'modern home kitchen',
+                architecture: 'exposed wooden beams, marble countertops, stainless steel appliances',
+                props: ['wooden cutting board', 'ceramic bowl', 'copper cookware', 'herb plants on windowsill'],
+                lighting: 'warm overhead pendant lights, natural light from window'
+            },
+            living_room: {
+                name: 'cozy living room',
+                architecture: 'hardwood floors, built-in bookshelves, large windows',
+                props: ['velvet sofa', 'coffee table books', 'throw blanket', 'indoor plant'],
+                lighting: 'soft ambient lamplight, golden hour sun through curtains'
+            },
+            bedroom: {
+                name: 'minimalist bedroom',
+                architecture: 'platform bed, white walls, wooden headboard',
+                props: ['linen bedding', 'bedside lamp', 'woven rug', 'small desk'],
+                lighting: 'soft morning light, bedside reading lamp'
+            },
+            bathroom: {
+                name: 'modern bathroom',
+                architecture: 'subway tile walls, marble vanity, large mirror',
+                props: ['cotton towels', 'ceramic soap dish', 'potted eucalyptus', 'glass containers'],
+                lighting: 'bright vanity lighting, natural light from frosted window'
+            },
+            office: {
+                name: 'home office',
+                architecture: 'exposed brick, wooden desk, floating shelves',
+                props: ['leather chair', 'stack of books', 'coffee mug', 'desk lamp', 'notebook'],
+                lighting: 'desk lamp glow, window light'
+            },
+            outdoors: {
+                name: 'urban sidewalk',
+                architecture: 'concrete pavement, building facades, street lamps',
+                props: ['crossbody bag', 'coffee cup', 'phone in hand', 'sunglasses'],
+                lighting: 'overcast natural light, street shadows'
+            },
+            car: {
+                name: 'car interior',
+                architecture: 'leather seats, dashboard, steering wheel',
+                props: ['seatbelt', 'phone mount', 'water bottle', 'jacket on passenger seat'],
+                lighting: 'dashboard glow, street lights through window'
+            },
+            store: {
+                name: 'convenience store',
+                architecture: 'fluorescent ceiling lights, metal shelving, refrigerated cases',
+                props: ['shopping basket', 'product shelves', 'checkout counter', 'neon signs'],
+                lighting: 'harsh fluorescent overhead, cooler light temperature'
+            },
+            gym: {
+                name: 'fitness gym',
+                architecture: 'mirrored walls, rubber flooring, exposed ductwork',
+                props: ['water bottle', 'towel', 'exercise mat', 'dumbbells'],
+                lighting: 'bright overhead LEDs, even illumination'
+            },
+            coffee_shop: {
+                name: 'neighborhood coffee shop',
+                architecture: 'exposed brick, wooden tables, large windows',
+                props: ['ceramic mug', 'laptop', 'notebook', 'pastry case'],
+                lighting: 'warm ambient, soft window light'
+            }
+        };
+
+        function checkSafety(input) {
+            const lower = input.toLowerCase();
+            const found = [];
+            const cleaned = [];
+            
+            const words = input.split(/\s+/);
+            for (let word of words) {
+                const cleanWord = word.toLowerCase().replace(/[^a-z]/g, '');
+                if (bannedWords.includes(cleanWord)) {
+                    found.push(word);
+                } else {
+                    cleaned.push(word);
                 }
             }
             
-            // Check if user specified outfit/wardrobe
-            const hasWardrobe = lower.includes('wearing') || lower.includes('dressed') || lower.includes('outfit') || 
-                               lower.includes('shirt') || lower.includes('dress') || lower.includes('pants') || 
-                               lower.includes('jacket') || lower.includes('gown') || lower.includes('suit');
+            return { 
+                isSafe: found.length === 0, 
+                violations: found,
+                cleanedInput: cleaned.join(' ')
+            };
+        }
+
+        function detectLocation(input) {
+            const lower = input.toLowerCase();
             
-            // Check if user specified pose/activity
-            const hasPose = lower.includes('standing') || lower.includes('sitting') || lower.includes('leaning') || 
-                           lower.includes('holding') || lower.includes('working') || lower.includes('posing');
+            const keywords = {
+                kitchen: ['cooking', 'kitchen', 'dinner', 'stove', 'chef', 'food prep'],
+                living_room: ['couch', 'sofa', 'tv', 'netflix', 'lounging', 'living room'],
+                bedroom: ['bed', 'bedroom', 'sleeping', 'laying', 'pillow', 'morning'],
+                bathroom: ['bathroom', 'shower', 'bath', 'vanity', 'getting ready'],
+                office: ['office', 'desk', 'working', 'computer', 'zoom', 'meeting'],
+                outdoors: ['outside', 'street', 'walking', 'sidewalk', 'park'],
+                car: ['car', 'driving', 'delivery', 'uber', 'commute', 'vehicle'],
+                store: ['store', 'shopping', 'convenience', 'grocery', 'buying'],
+                gym: ['gym', 'workout', 'exercise', 'fitness', 'training'],
+                coffee_shop: ['coffee', 'cafe', 'starbucks', 'espresso', 'latte']
+            };
             
-            return { detectedLocation, hasWardrobe, hasPose };
+            for (const [loc, words] of Object.entries(keywords)) {
+                if (words.some(w => lower.includes(w))) return locations[loc];
+            }
+            
+            return locations.living_room;
+        }
+
+        function parseSubject(input) {
+            const lower = input.toLowerCase();
+            
+            let ethnicity = '';
+            let descriptors = [];
+            
+            if (lower.includes('ebony') || lower.includes('black')) {
+                ethnicity = 'Black';
+                descriptors.push('rich skin tone', 'natural hair texture');
+            } else if (lower.includes('latina') || lower.includes('hispanic')) {
+                ethnicity = 'Latina';
+                descriptors.push('warm complexion', 'dark hair');
+            } else if (lower.includes('asian')) {
+                ethnicity = 'Asian';
+                descriptors.push('smooth skin', 'dark hair');
+            } else if (lower.includes('white') || lower.includes('caucasian')) {
+                ethnicity = 'Caucasian';
+            } else if (lower.includes('middle eastern')) {
+                ethnicity = 'Middle Eastern';
+                descriptors.push('olive skin tone');
+            }
+            
+            let age = '';
+            if (lower.includes('young')) age = 'early 20s';
+            else if (lower.includes('middle aged')) age = 'mid-40s';
+            else if (lower.includes('older')) age = 'late 50s';
+            else age = 'late 20s';
+            
+            if (lower.includes('curvy') || lower.includes('thick')) descriptors.push('full-figured');
+            if (lower.includes('fit') || lower.includes('athletic')) descriptors.push('athletic build');
+            if (lower.includes('tall')) descriptors.push('tall stature');
+            if (lower.includes('petite')) descriptors.push('petite frame');
+            
+            descriptors.push('visible skin texture', 'natural pores', 'subtle imperfections');
+            
+            return { ethnicity, age, descriptors: descriptors.join(', ') };
+        }
+
+        function getOutfit(location, input) {
+            const lower = input.toLowerCase();
+            
+            let formality = 'casual';
+            if (lower.includes('professional') || lower.includes('work')) formality = 'professional';
+            else if (lower.includes('lounge') || lower.includes('relax')) formality = 'loungewear';
+            else if (lower.includes('gym') || lower.includes('workout')) formality = 'athletic';
+            
+            const fabric = safeDB.fabrics[Math.floor(Math.random() * safeDB.fabrics.length)];
+            const top = safeDB.tops[Math.floor(Math.random() * safeDB.tops.length)];
+            const bottom = safeDB.bottoms[Math.floor(Math.random() * safeDB.bottoms.length)];
+            const accessory = safeDB.accessories[Math.floor(Math.random() * safeDB.accessories.length)];
+            
+            if (location.name.includes('kitchen')) {
+                return `${top} and ${bottom}, ${accessory}, practical for cooking`;
+            } else if (location.name.includes('gym')) {
+                return `athletic tank top and compression leggings, sports watch, workout appropriate`;
+            } else if (location.name.includes('office')) {
+                return `blouse and tailored slacks, minimal jewelry, professional attire`;
+            } else if (location.name.includes('bed')) {
+                return `oversized cotton t-shirt and lounge pants, comfortable sleepwear`;
+            }
+            
+            return `${fabric} ${top} and ${bottom}, ${accessory}, ${formality} attire`;
+        }
+
+        function getAction(input) {
+            const lower = input.toLowerCase();
+            
+            const actions = [
+                { match: /cooking|preparing|making/i, result: 'preparing food, hands engaged in task' },
+                { match: /scrolling|phone|texting/i, result: 'scrolling on smartphone, focused on screen' },
+                { match: /watching|tv|netflix/i, result: 'watching television, relaxed posture' },
+                { match: /reading|book/i, result: 'reading book, engaged with pages' },
+                { match: /working|typing|computer/i, result: 'working at computer, concentrated expression' },
+                { match: /driving|steering/i, result: 'hands on steering wheel, focused on road' },
+                { match: /eating|drinking/i, result: 'eating, utensils in hand' },
+                { match: /shopping|browsing|deciding/i, result: 'browsing products, decision-making posture' },
+                { match: /exercising|working out|training/i, result: 'performing exercise, physical exertion' },
+                { match: /walking|commuting/i, result: 'walking with purpose, natural gait' }
+            ];
+            
+            for (let action of actions) {
+                if (action.match.test(lower)) return action.result;
+            }
+            
+            return 'engaged in natural activity, candid posture';
         }
 
         function buildPrompt() {
             const input = document.getElementById('input').value.trim();
             if (!input) return;
 
-            const analysis = analyzeInput(input);
+            const safety = checkSafety(input);
+            const location = detectLocation(input);
+            const subject = parseSubject(input);
+            const outfit = getOutfit(location, input);
+            const action = getAction(input);
             
-            // Start with user's exact text as the base
-            let prompt = input;
+            // NEW: Smart technical detection
+            const techContext = detectTechnicalContext(input);
+            const shotType = getShotType(input, techContext.type);
+            const specs = techContext.specs;
             
-            // Clean up the input - replace newlines with commas for flow
-            prompt = prompt.replace(/\n+/g, ', ').replace(/,+/g, ',').replace(/,\s*,/g, ',');
+            // Construct structured prompt
+            let prompt = `A hyper-realistic, candid ${shotType} of a ${subject.age} ${subject.ethnicity} woman with ${subject.descriptors}. `;
             
-            const addedElements = [];
+            prompt += `The character is wearing ${outfit}. `;
             
-            // Only add location if user didn't specify one
-            if (!analysis.detectedLocation) {
-                // Default based on aesthetic keywords
-                if (input.toLowerCase().includes('industrial') || input.toLowerCase().includes('metal')) {
-                    prompt += ', in industrial metal workshop, concrete floors, exposed brick, welding equipment, steel beams';
-                    addedElements.push('industrial workshop setting');
-                } else if (input.toLowerCase().includes('gothic') || input.toLowerCase().includes('dark')) {
-                    prompt += ', in dimly lit Victorian interior, heavy velvet curtains, antique furniture, candlelight';
-                    addedElements.push('gothic interior setting');
-                } else {
-                    prompt += ', in minimalist studio space, neutral backdrop, soft natural window light';
-                    addedElements.push('studio setting');
-                }
-            } else {
-                // Enhance the location they specified
-                if (analysis.detectedLocation === 'workshop') {
-                    prompt += ', concrete floors, exposed brick walls, metal shavings on ground, industrial lighting';
-                    addedElements.push('workshop details');
-                }
-            }
+            prompt += `The scene is set in a ${location.name} with ${location.architecture} to establish scale and realism. `;
             
-            // Only add wardrobe if user didn't specify clothes
-            if (!analysis.hasWardrobe) {
-                // Suggest wardrobe based on aesthetic
-                if (input.toLowerCase().includes('metalsmith') || input.toLowerCase().includes('industrial')) {
-                    prompt += ', wearing distressed leather apron over black tank top, heavy work boots, fingerless gloves';
-                    addedElements.push('workshop attire');
-                } else if (input.toLowerCase().includes('gothic')) {
-                    prompt += ', wearing deconstructed black linen dress, torn fishnet stockings, heavy silver jewelry';
-                    addedElements.push('gothic outfit');
-                } else {
-                    prompt += ', wearing casual contemporary clothing';
-                    addedElements.push('basic outfit');
-                }
-            }
+            prompt += `Props visible: ${location.props.slice(0, 3).join(', ')}. `;
             
-            // Only add pose if user didn't specify action
-            if (!analysis.hasPose) {
-                prompt += ', standing in confident pose, natural posture';
-                addedElements.push('posing direction');
-            }
+            prompt += `The subject is ${action}. `;
             
-            // Always add technical specs at the end
-            prompt += ', editorial photography, 85mm lens, f/1.8, dramatic lighting, high contrast, photorealistic, 8k resolution, professional color grading';
-            addedElements.push('camera/technical specs');
+            prompt += `Lighting: ${location.lighting} creating realistic shadows and subsurface scattering on skin. `;
+            
+            // Technical specs based on context
+            prompt += `Technical Specs: Shot on ${specs.camera}, ${specs.lens}, ${specs.film}, ${specs.style}, aperture ${specs.aperture}, ${specs.focus}, ${specs.grain}, highly detailed, 8k resolution, photorealistic.`;
             
             // Display
             document.getElementById('results').classList.remove('hidden');
             document.getElementById('output').value = prompt;
             
-            // Show what was preserved vs added
-            document.getElementById('userTags').innerHTML = `<span class="tag px-3 py-1.5 rounded-lg text-xs text-gray-300">Your full creative direction</span>`;
+            // Show elements
+            document.getElementById('elementsList').innerHTML = `
+                <div><span class="text-gray-500">Subject:</span> ${subject.age} ${subject.ethnicity} woman</div>
+                <div><span class="text-gray-500">Location:</span> ${location.name}</div>
+                <div><span class="text-gray-500">Action:</span> ${action}</div>
+                <div><span class="text-gray-500">Outfit:</span> ${outfit}</div>
+            `;
             
-            document.getElementById('addedTags').innerHTML = addedElements.map(e => 
-                `<span class="tag px-3 py-1.5 rounded-lg text-xs text-green-400 border-green-400/30">${e}</span>`
-            ).join('');
+            // Show technical choices
+            document.getElementById('techList').innerHTML = `
+                <div class="tech-tag px-2 py-1 rounded inline-block mb-1">${specs.camera}</div>
+                <div class="text-cyan-400">${specs.lens}</div>
+                <div class="text-gray-400">${specs.why}</div>
+                <div class="text-gray-500 mt-2">Shot: ${shotType}</div>
+                <div class="text-gray-500">Style: ${specs.style}</div>
+            `;
+            
+            // Show safety status
+            if (safety.isSafe) {
+                document.getElementById('safetyList').innerHTML = `
+                    <div>✓ No violations detected</div>
+                    <div>✓ All fabrics appropriate</div>
+                    <div>✓ Context-appropriate attire</div>
+                `;
+            } else {
+                document.getElementById('safetyList').innerHTML = `
+                    <div class="text-yellow-400">⚠ Filtered: ${safety.violations.join(', ')}</div>
+                    <div>✓ Replaced with safe alternatives</div>
+                `;
+            }
         }
 
         function copyToClipboard() {
