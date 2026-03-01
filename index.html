@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RealScene | Natural Prompt Builder</title>
+    <title>RealScene | Prompt Builder</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -40,19 +40,23 @@
         
         <div class="text-center space-y-2 mb-8">
             <h1 class="text-3xl font-light">RealScene</h1>
-            <p class="text-gray-500 text-sm">Describe the moment. Get a complete, realistic scene.</p>
+            <p class="text-gray-500 text-sm">Paste your full creative direction. The generator will enhance it, not replace it.</p>
         </div>
 
         <div class="glass rounded-2xl p-6 space-y-4">
-            <label class="block text-sm font-medium text-gray-400">Describe your scene:</label>
+            <label class="block text-sm font-medium text-gray-400">Your creative direction (paste everything - subject, makeup, hair, mood, palette):</label>
             <textarea 
                 id="input" 
-                rows="3"
-                placeholder="Ebony goddess lounging in bed watching TV... OR Latina woman cooking in kitchen... OR Asian student studying at coffee shop..."
-                class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder-gray-600 focus:outline-none focus:border-white/30 resize-none"
+                rows="8"
+                placeholder="Ebony goddess, Aesthetic metalsmith femininity — industrial deconstruction meets gothic romanticism...
+
+Makeup Direction: zero-foundation skin with visible texture...
+Hair Direction: wet-look slicked back...
+Palette: cold steel grey, bone white..."
+                class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder-gray-600 focus:outline-none focus:border-white/30 resize-none font-mono text-sm"
             ></textarea>
             <button onclick="buildPrompt()" class="generate-btn w-full py-3 rounded-xl">
-                Generate Realistic Prompt
+                Build Prompt
             </button>
         </div>
 
@@ -60,7 +64,7 @@
             
             <div class="output-box rounded-2xl p-6">
                 <div class="flex justify-between items-center mb-4 pb-4 border-b border-white/10">
-                    <span class="text-xs text-gray-500 uppercase">Generated Prompt</span>
+                    <span class="text-xs text-gray-500 uppercase">Enhanced Prompt</span>
                     <button onclick="copyToClipboard()" class="text-xs text-gray-400 hover:text-white flex items-center gap-2" id="copyBtn">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
@@ -68,21 +72,17 @@
                         Copy
                     </button>
                 </div>
-                <textarea id="output" readonly class="w-full bg-transparent border-none resize-none text-sm leading-relaxed text-gray-300 focus:outline-none" rows="6"></textarea>
+                <textarea id="output" readonly class="w-full bg-transparent border-none resize-none text-sm leading-relaxed text-gray-300 focus:outline-none" rows="10"></textarea>
             </div>
 
-            <div class="grid md:grid-cols-3 gap-4 text-sm">
+            <div class="grid md:grid-cols-2 gap-4 text-sm">
                 <div class="glass rounded-xl p-4">
-                    <h3 class="text-xs text-gray-500 uppercase mb-3">Subject</h3>
-                    <div id="subjectTags" class="flex flex-wrap gap-2"></div>
+                    <h3 class="text-xs text-gray-500 uppercase mb-3">What You Provided</h3>
+                    <div id="userTags" class="flex flex-wrap gap-2"></div>
                 </div>
                 <div class="glass rounded-xl p-4">
-                    <h3 class="text-xs text-gray-500 uppercase mb-3">Complete Outfit</h3>
-                    <div id="wardrobeTags" class="flex flex-wrap gap-2"></div>
-                </div>
-                <div class="glass rounded-xl p-4">
-                    <h3 class="text-xs text-gray-500 uppercase mb-3">Setting</h3>
-                    <div id="envTags" class="flex flex-wrap gap-2"></div>
+                    <h3 class="text-xs text-gray-500 uppercase mb-3">What Was Added</h3>
+                    <div id="addedTags" class="flex flex-wrap gap-2"></div>
                 </div>
             </div>
 
@@ -91,213 +91,110 @@
     </div>
 
     <script>
-        // Location database with keywords
-        const locations = {
-            bedroom: {
-                name: 'cozy bedroom',
-                keywords: ['bed', 'bedroom', 'laying', 'lying', 'sleeping', 'nap', 'pillow', 'mattress', 'bunk'],
-                elements: ['unmade bed with white sheets', 'wooden headboard', 'nightstand with lamp', 'warm lamplight', 'throw pillows', 'phone charger on nightstand']
-            },
-            living_room: {
-                name: 'living room',
-                keywords: ['couch', 'sofa', 'tv', 'television', 'netflix', 'living room', 'lounge', 'recliner', 'sectional'],
-                elements: ['plush sectional sofa', 'coffee table', 'television glowing', 'soft overhead lighting', 'throw blanket', 'remote on table']
-            },
-            kitchen: {
-                name: 'kitchen',
-                keywords: ['kitchen', 'cooking', 'stove', 'refrigerator', 'fridge', 'counter', 'chef', 'baking', 'eating', 'dining', 'breakfast', 'lunch', 'dinner'],
-                elements: ['marble countertop', 'stainless steel appliances', 'morning light through window', 'coffee mug', 'wooden cutting board']
-            },
-            bathroom: {
-                name: 'bathroom',
-                keywords: ['bathroom', 'shower', 'bath', 'tub', 'mirror', 'vanity', 'sink', 'toilet', 'spa'],
-                elements: ['clawfoot tub', 'vanity mirror', 'white towels', 'bright vanity lights', 'steam from hot water', 'marble tiles']
-            },
-            outdoors: {
-                name: 'outdoor patio',
-                keywords: ['outside', 'outdoor', 'patio', 'deck', 'backyard', 'garden', 'park', 'beach', 'pool', 'sun', 'nature'],
-                elements: ['wicker lounge chair', 'potted plants', 'afternoon sunlight', 'wooden deck', 'iced drink on table']
-            },
-            coffee_shop: {
-                name: 'coffee shop',
-                keywords: ['coffee', 'cafe', 'starbucks', 'espresso', 'latte', 'studying', 'laptop', 'remote work', 'barista'],
-                elements: ['marble table', 'latte art in ceramic cup', 'laptop open', 'exposed brick wall', 'soft ambient music atmosphere']
-            },
-            office: {
-                name: 'home office',
-                keywords: ['office', 'desk', 'working', 'computer', 'zoom', 'meeting', 'professional', 'workspace', 'study'],
-                elements: ['wooden desk', 'ergonomic chair', 'dual monitors', 'notebook and pen', 'window with natural light']
-            },
-            gym: {
-                name: 'gym',
-                keywords: ['gym', 'workout', 'exercise', 'fitness', 'weights', 'treadmill', 'yoga', 'training', 'sweat'],
-                elements: ['rubber gym floor', 'mirrored walls', 'dumbbells', 'water bottle', 'neon gym lighting']
-            }
-        };
-
-        // Outfit database
-        const outfits = {
-            casual: [
-                { top: 'oversized graphic t-shirt', bottom: 'grey cotton leggings', desc: 'loose tee and leggings' },
-                { top: 'cream colored hoodie', bottom: 'black joggers', desc: 'hoodie and joggers' },
-                { top: 'white tank top', bottom: 'blue denim shorts', desc: 'tank and shorts' },
-                { top: 'striped long sleeve shirt', bottom: 'soft lounge pants', desc: 'long sleeve and pants' },
-                { top: 'black oversized sweater', bottom: 'grey sweatpants', desc: 'sweater and sweats' }
-            ],
-            sleep: [
-                { top: 'silk camisole', bottom: 'matching silk shorts', desc: 'silk cami and shorts set' },
-                { top: 'cotton sleep shirt', bottom: 'plaid pajama pants', desc: 'sleep shirt and pants' },
-                { top: 'ribbed tank top', bottom: 'soft boxer shorts', desc: 'tank and shorts' },
-                { top: 'oversized sleep tee', bottom: 'cotton shorts', desc: 'big tee and shorts' }
-            ],
-            lounge: [
-                { top: 'matching sports bra', bottom: 'high waist leggings', desc: 'athletic set' },
-                { top: 'cropped hoodie', bottom: 'biker shorts', desc: 'crop hoodie and shorts' },
-                { top: 'wrap top', bottom: 'wide leg lounge pants', desc: 'wrap top and pants' },
-                { top: 'button up pajama shirt', bottom: 'matching pajama pants', desc: 'button up set' }
-            ],
-            active: [
-                { top: 'fitted workout tank', bottom: 'compression shorts', desc: 'gym tank and shorts' },
-                { top: 'sports bra', bottom: 'high waist yoga pants', desc: 'yoga set' },
-                { top: 'moisture-wick t-shirt', bottom: 'athletic shorts', desc: 'workout tee and shorts' }
-            ],
-            dressy: [
-                { top: 'blouse', bottom: 'slacks', desc: 'blouse and slacks' },
-                { top: 'sweater', bottom: 'jeans', desc: 'sweater and jeans' },
-                { top: 'button up shirt', bottom: 'chinos', desc: 'button up and chinos' }
-            ]
-        };
-
-        function detectLocation(input) {
+        function analyzeInput(input) {
             const lower = input.toLowerCase();
             
-            for (const [key, data] of Object.entries(locations)) {
-                for (const keyword of data.keywords) {
-                    if (lower.includes(keyword)) {
-                        return data;
-                    }
+            // Check if user already specified location
+            const locationKeywords = {
+                'bedroom': ['bed', 'bedroom', 'boudoir'],
+                'kitchen': ['kitchen', 'cooking', 'culinary'],
+                'workshop': ['workshop', 'studio', 'forge', 'industrial', 'metal', 'metalsmith'],
+                'outdoor': ['outdoor', 'garden', 'street', 'alley'],
+                'bathroom': ['bathroom', 'bath'],
+                'office': ['office', 'desk'],
+                'gym': ['gym', 'fitness'],
+                'living room': ['couch', 'sofa', 'living room']
+            };
+            
+            let detectedLocation = null;
+            for (const [location, keywords] of Object.entries(locationKeywords)) {
+                if (keywords.some(k => lower.includes(k))) {
+                    detectedLocation = location;
+                    break;
                 }
             }
             
-            // Default based on activity if no location found
-            if (lower.includes('sleep') || lower.includes('rest')) return locations.bedroom;
-            if (lower.includes('eat') || lower.includes('cook') || lower.includes('food')) return locations.kitchen;
-            if (lower.includes('work') || lower.includes('type')) return locations.office;
+            // Check if user specified outfit/wardrobe
+            const hasWardrobe = lower.includes('wearing') || lower.includes('dressed') || lower.includes('outfit') || 
+                               lower.includes('shirt') || lower.includes('dress') || lower.includes('pants') || 
+                               lower.includes('jacket') || lower.includes('gown') || lower.includes('suit');
             
-            return locations.living_room; // Better default
-        }
-
-        function getOutfit(location, input) {
-            const lower = input.toLowerCase();
-            let category = 'casual';
+            // Check if user specified pose/activity
+            const hasPose = lower.includes('standing') || lower.includes('sitting') || lower.includes('leaning') || 
+                           lower.includes('holding') || lower.includes('working') || lower.includes('posing');
             
-            if (location.name.includes('bed')) category = 'sleep';
-            else if (location.name.includes('gym')) category = 'active';
-            else if (location.name.includes('office')) category = 'dressy';
-            else if (lower.includes('lounge') || lower.includes('relax')) category = 'lounge';
-            
-            const options = outfits[category];
-            return options[Math.floor(Math.random() * options.length)];
-        }
-
-        function parseSubject(input) {
-            // Extract everything before location/activity words
-            const lower = input.toLowerCase();
-            const stopWords = ['in', 'at', 'on', 'watching', 'scrolling', 'cooking', 'eating', 'working', 'reading', 'sleeping', 'laying', 'sitting', 'standing'];
-            
-            let words = input.split(' ');
-            let subjectWords = [];
-            
-            for (let word of words) {
-                if (stopWords.includes(word.toLowerCase())) break;
-                subjectWords.push(word);
-            }
-            
-            let subject = subjectWords.join(' ') || input.split(',')[0] || 'woman';
-            
-            const descriptors = [];
-            if (lower.includes('ebony') || lower.includes('black')) descriptors.push('deep skin tone');
-            if (lower.includes('latina') || lower.includes('hispanic')) descriptors.push('tan skin');
-            if (lower.includes('asian')) descriptors.push('smooth complexion');
-            if (lower.includes('blonde')) descriptors.push('blonde hair');
-            if (lower.includes('brunette')) descriptors.push('dark hair');
-            if (lower.includes('redhead')) descriptors.push('red hair');
-            if (lower.includes('thick') || lower.includes('curvy')) descriptors.push('voluptuous figure');
-            if (lower.includes('fit') || lower.includes('athletic')) descriptors.push('toned physique');
-            if (lower.includes('beautiful') || lower.includes('pretty') || lower.includes('goddess')) descriptors.push('stunning');
-            
-            return { name: subject, descriptors };
-        }
-
-        function detectActivity(input) {
-            const lower = input.toLowerCase();
-            const activities = [];
-            
-            if (lower.includes('phone') || lower.includes('scrolling') || lower.includes('texting')) {
-                activities.push('scrolling on smartphone');
-            }
-            if (lower.includes('tv') || lower.includes('watching') || lower.includes('netflix')) {
-                activities.push('watching television');
-            }
-            if (lower.includes('cook') || lower.includes('baking')) {
-                activities.push('cooking');
-            }
-            if (lower.includes('eat') || lower.includes('snack')) {
-                activities.push('eating');
-            }
-            if (lower.includes('read') || lower.includes('book')) {
-                activities.push('reading a book');
-            }
-            if (lower.includes('work') || lower.includes('laptop') || lower.includes('computer')) {
-                activities.push('working on laptop');
-            }
-            if (lower.includes('sleep') || lower.includes('nap')) {
-                activities.push('resting');
-            }
-            if (lower.includes('exercise') || lower.includes('workout') || lower.includes('yoga')) {
-                activities.push('exercising');
-            }
-            
-            if (activities.length === 0) {
-                activities.push('relaxing comfortably');
-            }
-            
-            return activities.join(', ');
+            return { detectedLocation, hasWardrobe, hasPose };
         }
 
         function buildPrompt() {
             const input = document.getElementById('input').value.trim();
             if (!input) return;
 
-            const location = detectLocation(input);
-            const subject = parseSubject(input);
-            const outfit = getOutfit(location, input);
-            const activity = detectActivity(input);
-
-            const promptParts = [
-                'Candid lifestyle photograph',
-                `of ${subject.name}${subject.descriptors.length ? ', ' + subject.descriptors.join(', ') : ''}`,
-                `wearing ${outfit.desc} (${outfit.top}, ${outfit.bottom})`,
-                `${activity}`,
-                `in ${location.name}`,
-                location.elements.join(', '),
-                'natural lighting, realistic skin texture, 50mm lens, shallow depth of field, photorealistic, 4k'
-            ];
-
-            const finalPrompt = promptParts.join(', ') + '.';
-
+            const analysis = analyzeInput(input);
+            
+            // Start with user's exact text as the base
+            let prompt = input;
+            
+            // Clean up the input - replace newlines with commas for flow
+            prompt = prompt.replace(/\n+/g, ', ').replace(/,+/g, ',').replace(/,\s*,/g, ',');
+            
+            const addedElements = [];
+            
+            // Only add location if user didn't specify one
+            if (!analysis.detectedLocation) {
+                // Default based on aesthetic keywords
+                if (input.toLowerCase().includes('industrial') || input.toLowerCase().includes('metal')) {
+                    prompt += ', in industrial metal workshop, concrete floors, exposed brick, welding equipment, steel beams';
+                    addedElements.push('industrial workshop setting');
+                } else if (input.toLowerCase().includes('gothic') || input.toLowerCase().includes('dark')) {
+                    prompt += ', in dimly lit Victorian interior, heavy velvet curtains, antique furniture, candlelight';
+                    addedElements.push('gothic interior setting');
+                } else {
+                    prompt += ', in minimalist studio space, neutral backdrop, soft natural window light';
+                    addedElements.push('studio setting');
+                }
+            } else {
+                // Enhance the location they specified
+                if (analysis.detectedLocation === 'workshop') {
+                    prompt += ', concrete floors, exposed brick walls, metal shavings on ground, industrial lighting';
+                    addedElements.push('workshop details');
+                }
+            }
+            
+            // Only add wardrobe if user didn't specify clothes
+            if (!analysis.hasWardrobe) {
+                // Suggest wardrobe based on aesthetic
+                if (input.toLowerCase().includes('metalsmith') || input.toLowerCase().includes('industrial')) {
+                    prompt += ', wearing distressed leather apron over black tank top, heavy work boots, fingerless gloves';
+                    addedElements.push('workshop attire');
+                } else if (input.toLowerCase().includes('gothic')) {
+                    prompt += ', wearing deconstructed black linen dress, torn fishnet stockings, heavy silver jewelry';
+                    addedElements.push('gothic outfit');
+                } else {
+                    prompt += ', wearing casual contemporary clothing';
+                    addedElements.push('basic outfit');
+                }
+            }
+            
+            // Only add pose if user didn't specify action
+            if (!analysis.hasPose) {
+                prompt += ', standing in confident pose, natural posture';
+                addedElements.push('posing direction');
+            }
+            
+            // Always add technical specs at the end
+            prompt += ', editorial photography, 85mm lens, f/1.8, dramatic lighting, high contrast, photorealistic, 8k resolution, professional color grading';
+            addedElements.push('camera/technical specs');
+            
+            // Display
             document.getElementById('results').classList.remove('hidden');
-            document.getElementById('output').value = finalPrompt;
+            document.getElementById('output').value = prompt;
             
-            document.getElementById('subjectTags').innerHTML = `<span class="tag px-3 py-1.5 rounded-lg text-xs text-gray-300">${subject.name}</span>` + 
-                subject.descriptors.map(d => `<span class="tag px-3 py-1.5 rounded-lg text-xs text-gray-300">${d}</span>`).join('');
+            // Show what was preserved vs added
+            document.getElementById('userTags').innerHTML = `<span class="tag px-3 py-1.5 rounded-lg text-xs text-gray-300">Your full creative direction</span>`;
             
-            document.getElementById('wardrobeTags').innerHTML = 
-                `<span class="tag px-3 py-1.5 rounded-lg text-xs text-gray-300">${outfit.top}</span>` +
-                `<span class="tag px-3 py-1.5 rounded-lg text-xs text-gray-300">${outfit.bottom}</span>`;
-            
-            document.getElementById('envTags').innerHTML = location.elements.map(e => 
-                `<span class="tag px-3 py-1.5 rounded-lg text-xs text-gray-300">${e}</span>`
+            document.getElementById('addedTags').innerHTML = addedElements.map(e => 
+                `<span class="tag px-3 py-1.5 rounded-lg text-xs text-green-400 border-green-400/30">${e}</span>`
             ).join('');
         }
 
@@ -308,32 +205,9 @@
             copyText.select();
             copyText.setSelectionRange(0, 99999);
             
-            try {
-                navigator.clipboard.writeText(copyText.value).then(function() {
-                    copyBtn.innerHTML = `
-                        <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                        <span class="text-green-400">Copied!</span>
-                    `;
-                    setTimeout(function() {
-                        copyBtn.innerHTML = `
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
-                            </svg>
-                            Copy
-                        `;
-                    }, 2000);
-                });
-            } catch (err) {
-                document.execCommand("copy");
-                copyBtn.innerHTML = `
-                    <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    <span class="text-green-400">Copied!</span>
-                `;
-                setTimeout(function() {
+            navigator.clipboard.writeText(copyText.value).then(function() {
+                copyBtn.innerHTML = `<span class="text-green-400">Copied!</span>`;
+                setTimeout(() => {
                     copyBtn.innerHTML = `
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
@@ -341,9 +215,8 @@
                         Copy
                     `;
                 }, 2000);
-            }
+            });
         }
     </script>
 </body>
 </html>
-
