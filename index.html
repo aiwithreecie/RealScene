@@ -3,578 +3,1727 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HyperReal Prompt Constructor</title>
+    <title>Real Scene | Reecie Designz</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #0a0a0c;
-            color: #e5e5e5;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .code-block {
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-        .glass {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
         }
-        .output-box {
-            background: #141416;
-            border: 1px solid #2a2a2d;
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #1f2937;
         }
-        .generate-btn {
-            background: #fff;
-            color: #000;
-            font-weight: 600;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 3px;
         }
-        .generate-btn:hover {
-            background: #ddd;
+        .toast {
+            animation: fadeInOut 2s ease-in-out;
         }
-        .safety-badge {
-            background: rgba(0, 255, 136, 0.1);
-            border: 1px solid rgba(0, 255, 136, 0.3);
-            color: #00ff88;
-        }
-        .tech-tag {
-            background: rgba(0, 240, 255, 0.1);
-            border: 1px solid rgba(0, 240, 255, 0.3);
-            color: #00f0ff;
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; transform: translateY(20px); }
+            10%, 90% { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-8">
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col">
 
-    <div class="max-w-5xl mx-auto space-y-6">
+    <!-- Sticky Header -->
+    <header class="sticky top-0 z-50 bg-gray-800 border-b border-gray-700 shadow-lg">
+        <div id="topBrandBar" class="w-full text-center py-3 font-semibold">
+            <a href="https://aiwithreecie.com" target="_blank" rel="noopener noreferrer" class="hover:underline text-lg" style="color: inherit; text-decoration-thickness: 2px;">
+                Reecie Designz | aiwithreecie.com
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl mx-auto w-full p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        <div class="text-center space-y-2 mb-8">
-            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass mb-4">
-                <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                <span class="text-xs font-mono text-green-400 tracking-widest">GUARDRAIL SAFE • HYPER-REALISTIC</span>
-            </div>
-            <h1 class="text-4xl font-light">HyperReal Constructor</h1>
-            <p class="text-gray-500 text-sm max-w-xl mx-auto">Enter your scene. Technical specs auto-adjust based on context.</p>
-        </div>
-
-        <div class="glass rounded-2xl p-6 space-y-4">
-            <div class="flex justify-between items-center">
-                <label class="block text-sm font-medium text-gray-400">Scene Description:</label>
-                <span class="safety-badge px-3 py-1 rounded-full text-xs font-mono">AUTO-FILTER ACTIVE</span>
-            </div>
-            <textarea 
-                id="input" 
-                rows="4"
-                placeholder="Street photography, woman walking in rain, urban environment, moody..."
-                class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder-gray-600 focus:outline-none focus:border-white/30 resize-none"
-            ></textarea>
-            <button onclick="buildPrompt()" class="generate-btn w-full py-3 rounded-xl">
-                Construct Hyper-Real Prompt
-            </button>
-        </div>
-
-        <div id="results" class="hidden space-y-4">
+        <!-- Left Panel - Inputs -->
+        <div class="space-y-6 custom-scrollbar overflow-y-auto max-h-[calc(100vh-140px)] lg:max-h-none pr-2">
             
-            <div class="output-box rounded-2xl p-6">
-                <div class="flex justify-between items-center mb-4 pb-4 border-b border-white/10">
-                    <span class="text-xs text-gray-500 uppercase font-mono">Generated Prompt</span>
-                    <button onclick="copyToClipboard()" class="text-xs text-gray-400 hover:text-white flex items-center gap-2" id="copyBtn">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
-                        </svg>
-                        Copy
-                    </button>
-                </div>
-                <textarea id="output" readonly class="w-full bg-transparent border-none resize-none text-sm leading-relaxed text-gray-300 focus:outline-none font-mono" rows="12"></textarea>
+            <!-- App Title -->
+            <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 text-center">
+                <h2 class="text-2xl font-bold text-emerald-400">Real Scene</h2>
+                <p class="text-sm text-gray-400 mt-1">Hyper-Realistic Photo Prompt Generator</p>
             </div>
-
-            <div class="grid md:grid-cols-3 gap-4 text-sm">
-                <div class="glass rounded-xl p-4">
-                    <h3 class="text-xs text-gray-500 uppercase mb-3">Scene Elements</h3>
-                    <div id="elementsList" class="space-y-2 text-xs"></div>
-                </div>
-                <div class="glass rounded-xl p-4">
-                    <h3 class="text-xs text-gray-500 uppercase mb-3">Technical Choices</h3>
-                    <div id="techList" class="space-y-2 text-xs"></div>
-                </div>
-                <div class="glass rounded-xl p-4">
-                    <h3 class="text-xs text-gray-500 uppercase mb-3">Safety Check</h3>
-                    <div id="safetyList" class="space-y-2 text-xs text-green-400"></div>
+            
+            <!-- Quick Presets -->
+            <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Quick Presets</label>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="applyPreset('home')" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-sm transition">Home Lifestyle</button>
+                    <button onclick="applyPreset('gym')" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-sm transition">Gym Set</button>
+                    <button onclick="applyPreset('errands')" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-sm transition">Errands Run</button>
+                    <button onclick="applyPreset('bathroom')" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-sm transition">Bathroom Selfcare</button>
+                    <button onclick="applyPreset('nightlife')" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-sm transition">Nightlife</button>
+                    <button onclick="applyPreset('travel')" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-sm transition">Travel</button>
                 </div>
             </div>
 
+            <!-- Dropdowns Grid -->
+            <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Vibe</label>
+                    <select id="vibe" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                        <option>Lifestyle</option>
+                        <option>UGC Creator</option>
+                        <option>Luxury Brand</option>
+                        <option>Nightlife</option>
+                        <option>Cozy Home</option>
+                        <option>Fitness/Gym</option>
+                        <option>Travel/On-the-go</option>
+                        <option>Errands/Retail</option>
+                        <option>Office/Workday</option>
+                        <option>Outdoors/Day</option>
+                        <option>Outdoors/Night</option>
+                        <option>Event/Social</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Location Category</label>
+                    <select id="locationCategory" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                        <option>Home</option>
+                        <option>Indoor Public</option>
+                        <option>Outdoor Public</option>
+                        <option>Vehicle/Transit</option>
+                        <option>Workplace</option>
+                        <option>Beauty/Selfcare</option>
+                        <option>Gym</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Time</label>
+                    <select id="time" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                        <option>Morning</option>
+                        <option>Afternoon</option>
+                        <option>Evening</option>
+                        <option>Night</option>
+                        <option>Late night</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Lighting</label>
+                    <select id="lighting" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                        <option>Natural window light</option>
+                        <option>Soft daylight interior</option>
+                        <option>Warm practical lamps</option>
+                        <option>Overhead indoor lighting</option>
+                        <option>Mixed indoor lighting</option>
+                        <option>TV glow</option>
+                        <option>Bathroom vanity lights</option>
+                        <option>Gym overhead lighting</option>
+                        <option>Outdoor open shade</option>
+                        <option>Golden hour</option>
+                        <option>Night street lighting</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Shot Type</label>
+                    <select id="shotType" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"></select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Angle</label>
+                    <select id="angle" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"></select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Batch</label>
+                    <select id="batch" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                        <option value="1">1</option>
+                        <option value="3">3</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Detail</label>
+                    <select id="detail" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                        <option>Minimal</option>
+                        <option selected>Detailed</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Free Text Overrides -->
+            <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 space-y-4">
+                <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider">Free Text Overrides</label>
+                
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Scene / Location</label>
+                    <input type="text" id="sceneText" placeholder="e.g., modern kitchen with marble island" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                </div>
+                
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Activity / Purpose</label>
+                    <input type="text" id="activityText" placeholder="e.g., prepping vegetables for dinner" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                </div>
+                
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Brand Palette / Color Scheme</label>
+                    <input type="text" id="paletteText" placeholder="e.g., warm neutrals, cream and taupe" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                </div>
+                
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Props (comma-separated)</label>
+                    <input type="text" id="propsText" placeholder="e.g., cutting board, knife, bowl" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                </div>
+                
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Wardrobe preference</label>
+                    <input type="text" id="wardrobeText" placeholder="e.g., fitted black athleisure set" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                </div>
+                
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Notes / constraints</label>
+                    <textarea id="notesText" rows="2" placeholder="Additional constraints or notes..." class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 resize-none"></textarea>
+                </div>
+            </div>
+
+            <!-- Advanced Toggles -->
+            <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 space-y-3">
+                <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Advanced Options</label>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-sm">Allow random wardrobe</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="randomWardrobe" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-sm">Allow random lighting nuance</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="randomLighting" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-sm">Strict realism mode</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="strictRealism" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-sm">Lock scene across batch</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="lockScene" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-sm">Lock activity across batch</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="lockActivity" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-sm">Lock vibe across batch</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="lockVibe" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="generatePrompts()" class="col-span-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Generate Prompts
+                </button>
+                <button onclick="randomizeAll()" class="bg-purple-600 hover:bg-purple-500 text-white font-medium py-2 px-4 rounded-lg transition text-sm">
+                    Randomize (Full Reroll)
+                </button>
+                <button onclick="refreshCameraOnly()" class="bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 px-4 rounded-lg transition text-sm">
+                    Refresh Camera Only
+                </button>
+                <button onclick="refreshPoseOnly()" class="bg-orange-600 hover:bg-orange-500 text-white font-medium py-2 px-4 rounded-lg transition text-sm">
+                    Refresh Pose Only
+                </button>
+                <button onclick="clearAll()" class="bg-gray-600 hover:bg-gray-500 text-white font-medium py-2 px-4 rounded-lg transition text-sm">
+                    Clear All
+                </button>
+            </div>
         </div>
 
-    </div>
+        <!-- Right Panel - Output -->
+        <div class="bg-gray-800 rounded-lg border border-gray-700 flex flex-col h-[calc(100vh-140px)]">
+            <div class="p-4 border-b border-gray-700 flex items-center justify-between">
+                <h2 class="font-semibold text-lg">Generated Prompts</h2>
+                <span id="promptCount" class="text-xs bg-gray-700 px-2 py-1 rounded text-gray-400">0 prompts</span>
+            </div>
+            <div id="outputContainer" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                <div class="text-center text-gray-500 py-12">
+                    <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <p>Click "Generate Prompts" to create hyper-realistic photo prompts</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Sticky Footer -->
+    <footer class="sticky bottom-0 z-50 bg-gray-800 border-t border-gray-700">
+        <div id="bottomBrandFooter" class="w-full text-center py-3 text-sm">
+            <a href="https://aiwithreecie.com" target="_blank" rel="noopener noreferrer" class="hover:underline" style="color: inherit; text-decoration-thickness: 2px;">
+                © <span id="copyrightYear"></span> Reecie Designz | aiwithreecie.com
+            </a>
+        </div>
+    </footer>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-50"></div>
 
     <script>
-        // Banned words filter
-        const bannedWords = [
-            'lace', 'bikini', 'lingerie', 'sheer', 'transparent', 'see-through',
-            'nude', 'naked', 'topless', 'bare', 'exposed', 'intimate', 'sensual',
-            'seductive', 'erotic', 'suggestive', 'revealing', 'scantily', 'underwear',
-            'bra', 'panties', 'thong', 'g-string', 'cleavage', 'midriff', 'plunging'
+        // Data Libraries
+        const SHOT_TYPES = [
+            "Full body","Three-quarter","Medium action frame (knees-up)","Waist-up","Chest-up","Head-and-shoulders",
+            "Close-up (face)","Extreme close-up (eyes/lips)","Extreme close-up (hands/prop detail)","Detail insert (prop close shot)",
+            "POV hands-only","Over-the-shoulder (OTS)","Profile shot","Rear three-quarter","Wide environmental (subject small in frame)",
+            "Mirror shot (reflection frame)","Doorway/threshold wide candid","Phone-screen facing subject (device featured, no readable text)"
         ];
 
-        // Technical specs database - chooses based on context
-        const technicalSpecs = {
-            // Street/candid photography
-            street: {
-                camera: 'Leica Q2',
-                lens: '28mm f/1.7 Summilux',
-                film: 'Kodak Portra 400 film stock',
-                style: 'decisive moment capture, street photography aesthetic',
-                aperture: 'f/2.8',
-                focus: 'zone focusing, hyperfocal distance',
-                grain: 'natural film grain, slight contrast',
-                why: 'Wide angle for environmental context, fast aperture for low light'
+        const ANGLES = [
+            "Eye level (neutral)","Slight low angle","Slight high angle","Shoulder-level candid","Hip-level","Knee-level",
+            "Ground-level near floor","Overhead top-down","45-degree side angle","Three-quarter front angle","Profile angle (side)",
+            "Reverse angle (from behind)","Over-the-shoulder angle (OTS perspective)","Mirror reflection angle","Corner-of-room wide candid",
+            "Counter-height angle (kitchen/bath realism)","Seated lap-level angle (phone/desk realism)","Locker-room mirror angle (gym realism)"
+        ];
+
+        const MICRO_ACTIONS = [
+            "brief downward glance, then eyes back up",
+            "subtle blink mid-motion",
+            "weight shift from one leg to the other",
+            "hand reposition for a better grip",
+            "soft shoulder drop and posture reset",
+            "tiny head tilt as if reacting",
+            "micro-adjusting clothing hem once, then hands return to task",
+            "quick side glance toward an off-camera sound, then refocus",
+            "fingers lightly tap the surface once, then continue",
+            "small wrist rotation to reposition the utensil/tool"
+        ];
+
+        const CONTEXT_KEYWORDS = [
+            {ctx:"HOME_KITCHEN", keys:["kitchen","stove","oven","sink","counter","island","cutting board","fridge","pan","skillet","seasoning","tray","foil","baking sheet","spice"]},
+            {ctx:"HOME_LIVING", keys:["living room","couch","sofa","tv","coffee table","remote","throw blanket","lamp","rug"]},
+            {ctx:"HOME_BEDROOM", keys:["bedroom","bed","nightstand","closet","dresser","laundry","mirror","pillow","duvet"]},
+            {ctx:"HOME_BATHROOM", keys:["bathroom","sink","mirror","toothbrush","soap","towel","shower","vanity","toiletries","countertop","faucet"]},
+            {ctx:"HOME_OFFICE", keys:["home office","desk","workstation","office chair","laptop","keyboard","mouse","monitor","notebook","planner","documents","paperwork","phone stand","sticky notes","printer","calendar","task list"]},
+            {ctx:"GYM", keys:["gym","workout","treadmill","dumbbell","weights","bench","squat rack","mat","locker room","mirror wall","protein","cable machine"]},
+            {ctx:"TRAVEL_TRANSIT", keys:["airport","gate","terminal","boarding","luggage","suitcase","carry-on","boarding pass","hotel lobby","rideshare"]},
+            {ctx:"VEHICLE", keys:["car","passenger seat","dashboard","steering wheel","console","seatbelt","back seat","parked","cupholder"]},
+            {ctx:"RETAIL_ERRANDS", keys:["store","grocery","aisle","checkout","shopping cart","cart","basket","pharmacy","mall","receipt","shelf"]},
+            {ctx:"BEAUTY_SELFCARE", keys:["salon","spa","nail","manicure","pedicure","makeup","skincare","vanity station","beauty bag","mirror station"]},
+            {ctx:"WORKPLACE", keys:["office","lobby","meeting","conference room","badge","elevator","reception","hallway","desk area"]},
+            {ctx:"NIGHTLIFE", keys:["bar","club","lounge","cocktail","stool","dance floor","neon","vip","booth"]},
+            {ctx:"OUTDOOR_DAY", keys:["sidewalk","park","patio","street","daytime","open shade","crosswalk","sunlight","parking"]},
+            {ctx:"OUTDOOR_NIGHT", keys:["night","streetlights","after dark","city lights","parking lot","wet pavement","neon","nighttime"]},
+            {ctx:"GENERIC_INDOOR_PUBLIC", keys:["indoor public","waiting area","public space","reception area","hallway","lobby","queue"]},
+        ];
+
+        const DOMAIN_KEYWORDS = {
+            COOKING_PREP:["prep","prepping","cook","cooking","season","marinate","chop","slice","dice","skillet","stove","pan","meal","dinner","lamb","chicken","steak","salmon","tray","baking sheet"],
+            COOKING_ASSEMBLE:["snack","assemble","salad","sandwich","yogurt","granola","bowl","mix","pour","cereal","plate","fruit"],
+            DRINK_MAKE:["coffee","tea","mug","espresso","latte","brew","kettle","ice","straw"],
+            CLEANING:["clean","cleaning","wipe","wiping","sanitize","organize","tidy","laundry","fold","vacuum","dust","declutter"],
+            BATHROOM_HYGIENE:["wash hands","washing hands","brush teeth","brushing teeth","toothbrush","sink","soap","towel","rinse","wash face"],
+            BEAUTY:["makeup","skincare","serum","lotion","perfume","lip gloss","edges","hair","brush","comb","nails","mirror","concealer","powder"],
+            WORK:["work","typing","laptop","email","meeting","calendar","notebook","planner","client","desk","documents","paperwork","reviewing","editing","invoice","schedule"],
+            FITNESS:["gym","workout","weights","dumbbells","treadmill","cardio","stretch","reps","set","locker","protein","timer","squat rack"],
+            TRAVEL:["airport","boarding","gate","check-in","hotel","suitcase","luggage","terminal","passport","rideshare"],
+            RETAIL:["shopping","grocery","checkout","aisle","cart","basket","store","pharmacy","errands","receipt","shelf"],
+            GENERIC:["scrolling","phone","texting","waiting","walking","standing","bag","keys"]
+        };
+
+        const ACTION_TEMPLATES = {
+            COOKING_PREP:{
+                primary:[
+                    "prepping {target} on a cutting board",
+                    "patting {target} dry with paper towels",
+                    "seasoning {target} with salt and black pepper",
+                    "arranging {target} in a single layer on a tray",
+                    "drizzling oil into a skillet and waiting for shimmer",
+                    "trimming {target} and sliding pieces into a neat pile"
+                ],
+                secondary:[
+                    "repositioning the tray closer to the stove",
+                    "reaching for seasoning jars and setting them down",
+                    "turning slightly to grab tongs from the utensil crock",
+                    "placing trimmed pieces into a neat pile on the board",
+                    "pulling the cutting board closer to the edge for leverage"
+                ]
             },
-            
-            // Portrait/close-up
-            portrait: {
-                camera: 'Sony A7R IV',
-                lens: '85mm f/1.4 GM',
-                film: 'digital raw',
-                style: 'shallow depth of field, creamy bokeh',
-                aperture: 'f/1.8',
-                focus: 'eye autofocus tack sharp',
-                grain: 'clean digital, no noise',
-                why: 'Telephoto compression isolates subject, wide aperture separates from background'
+            COOKING_ASSEMBLE:{
+                primary:[
+                    "assembling a quick snack on the counter",
+                    "pouring {liquid} into a bowl and pausing to check the amount",
+                    "stirring gently with a spoon and tapping it once",
+                    "setting the bowl down and sliding it slightly closer",
+                    "adding toppings and smoothing them into an even layer"
+                ],
+                secondary:[
+                    "reaching for the next ingredient and setting it beside the bowl",
+                    "adjusting the spoon grip and stirring again",
+                    "pulling the bowl closer to the edge for comfort",
+                    "wiping a small spill with a napkin and returning hands to the bowl"
+                ]
             },
-            
-            // Environmental/wide
-            environmental: {
-                camera: 'Canon EOS R5',
-                lens: '35mm f/1.4L',
-                film: 'digital raw',
-                style: 'environmental portrait, context and subject',
-                aperture: 'f/4',
-                focus: 'deep depth of field, subject and background sharp',
-                grain: 'clean digital',
-                why: '35mm shows surroundings while maintaining natural perspective'
+            DRINK_MAKE:{
+                primary:[
+                    "pouring {liquid} into a cup carefully",
+                    "stirring slowly with a spoon",
+                    "adding ice and adjusting the straw angle",
+                    "lifting the cup for a small sip and lowering it"
+                ],
+                secondary:[
+                    "setting the cup down and turning it by the rim",
+                    "wiping a small drip with a napkin",
+                    "repositioning the cup closer to the edge for reach"
+                ]
             },
-            
-            // Detail/macro
-            detail: {
-                camera: 'Sony A7R IV',
-                lens: '90mm f/2.8 Macro G',
-                film: 'digital raw',
-                style: 'extreme detail, macro texture',
-                aperture: 'f/5.6',
-                focus: 'focus stacking, razor sharp detail',
-                grain: 'ISO 100, zero noise',
-                why: 'Macro lens for texture detail, smaller aperture for depth'
+            CLEANING:{
+                primary:[
+                    "wiping the surface in short strokes and folding the cloth once",
+                    "spraying cleaner lightly and wiping in overlapping passes",
+                    "sorting items into a neat stack and aligning edges",
+                    "pulling items forward, wiping underneath, then returning them"
+                ],
+                secondary:[
+                    "tossing a used paper towel into the bin",
+                    "moving one item aside and wiping underneath",
+                    "repositioning the cloth and continuing the pass"
+                ]
             },
-            
-            // Low light/night
-            night: {
-                camera: 'Sony A7S III',
-                lens: '50mm f/1.2 GM',
-                film: 'digital raw high ISO',
-                style: 'available light, atmospheric',
-                aperture: 'f/1.2',
-                focus: 'single point AF, low light capable',
-                grain: 'controlled noise at high ISO, moody',
-                why: 'Low light monster, widest aperture for night shooting'
+            BATHROOM_HYGIENE:{
+                primary:[
+                    "washing hands at the sink, rubbing palms and fingertips thoroughly",
+                    "brushing teeth at the mirror and rinsing once",
+                    "washing face and patting dry with a towel"
+                ],
+                secondary:[
+                    "turning off the faucet and wiping a splash with the hand towel",
+                    "setting the towel back on the hook neatly",
+                    "placing the toothbrush back into the holder"
+                ]
             },
-            
-            // Documentary/candid
-            documentary: {
-                camera: 'Fujifilm X-T4',
-                lens: '23mm f/1.4',
-                film: 'Fuji Classic Chrome simulation',
-                style: 'documentary candid, unobtrusive',
-                aperture: 'f/2.0',
-                focus: 'snap focus, pre-focused',
-                grain: 'film simulation grain, organic',
-                why: 'Discreet size, film look straight from camera'
+            BEAUTY:{
+                primary:[
+                    "applying skincare and pressing it into the skin",
+                    "checking the mirror briefly and smoothing hairline with fingertips",
+                    "applying lip gloss and closing the tube carefully",
+                    "blotting lightly and rechecking the mirror"
+                ],
+                secondary:[
+                    "setting the product down and adjusting posture",
+                    "leaning closer to check detail, then relaxing back",
+                    "wiping fingertips with a tissue and continuing"
+                ]
             },
-            
-            // Architecture/interior
-            architecture: {
-                camera: 'Canon EOS R5',
-                lens: 'TS-E 24mm f/3.5L tilt-shift',
-                film: 'digital raw',
-                style: 'architectural precision, straight lines',
-                aperture: 'f/8',
-                focus: 'hyperfocal, everything sharp',
-                grain: 'base ISO, pristine',
-                why: 'Tilt-shift corrects perspective, small aperture for depth'
+            WORK:{
+                primary:[
+                    "typing on a laptop and pausing to use the trackpad",
+                    "reviewing documents and aligning the pages neatly",
+                    "writing a quick note in a notebook and tapping the pen once",
+                    "checking a calendar and updating a to-do list",
+                    "highlighting a line on a document and turning the page"
+                ],
+                secondary:[
+                    "adjusting the laptop screen angle slightly and leaning in to read",
+                    "stacking papers and sliding them to the side",
+                    "placing the pen down and returning hands to the keyboard",
+                    "moving a sticky note and re-centering the notebook"
+                ]
             },
-            
-            // Action/movement
-            action: {
-                camera: 'Sony A1',
-                lens: '24-70mm f/2.8 GM',
-                film: 'digital raw',
-                style: 'frozen motion, dynamic',
-                aperture: 'f/2.8',
-                focus: 'continuous AF tracking, real-time eye',
-                grain: 'clean at high shutter speed',
-                why: 'Fast shutter freezes motion, zoom flexibility'
+            FITNESS:{
+                primary:[
+                    "re-racking dumbbells onto the correct slots with a firm grip",
+                    "checking a workout timer on the phone between sets",
+                    "stretching on a mat and resetting posture before standing",
+                    "wiping equipment handles with a towel",
+                    "tightening grip straps and resetting stance"
+                ],
+                secondary:[
+                    "taking a sip from a water bottle and setting it down",
+                    "adjusting earbuds and rolling shoulders once",
+                    "shifting weight and re-centering feet before the next set"
+                ]
             },
-            
-            // Vintage/retro look
-            vintage: {
-                camera: 'Nikon F3',
-                lens: '50mm f/1.4 AI-S',
-                film: 'Kodak Tri-X 400 black and white',
-                style: 'classic photojournalism, nostalgic',
-                aperture: 'f/2.0',
-                focus: 'manual focus, slight softness acceptable',
-                grain: 'pronounced film grain, high contrast',
-                why: 'Film stocks for authentic vintage character'
+            TRAVEL:{
+                primary:[
+                    "pulling a suitcase by the handle while checking the phone briefly",
+                    "adjusting a backpack strap and shifting it higher on the shoulder",
+                    "holding a boarding pass low at the side while scanning the area",
+                    "setting a carry-on down and regripping the handle"
+                ],
+                secondary:[
+                    "rolling the suitcase a step forward and stopping",
+                    "tucking the phone away and looking up",
+                    "repositioning the bag on the shoulder for comfort"
+                ]
+            },
+            RETAIL:{
+                primary:[
+                    "pushing a cart slowly while scanning shelves, one hand on the handle",
+                    "reaching for an item, checking the label briefly, then lowering it",
+                    "placing an item into a basket and adjusting grip",
+                    "setting the basket down briefly to rearrange items"
+                ],
+                secondary:[
+                    "turning slightly to compare another item before choosing",
+                    "repositioning the cart and moving forward one step",
+                    "placing the chosen item into the cart with a controlled motion"
+                ]
+            },
+            GENERIC:{
+                primary:[
+                    "checking the phone briefly while standing naturally",
+                    "adjusting a bag strap and shifting weight comfortably",
+                    "setting an item down carefully on a nearby surface",
+                    "unlocking the phone, scrolling once, then locking it"
+                ],
+                secondary:[
+                    "glancing up at the surroundings and refocusing",
+                    "repositioning grip and relaxing shoulders",
+                    "tucking hair behind one ear and returning hands to task"
+                ]
             }
         };
 
-        function detectTechnicalContext(input) {
-            const lower = input.toLowerCase();
+        const PROP_SETS = {
+            COOKING_PREP:["cutting board","seasoning jars","skillet","tongs","paper towels","tray","baking sheet"],
+            COOKING_ASSEMBLE:["bowl","spoon","counter space","snack ingredients","napkin"],
+            DRINK_MAKE:["cup","spoon","napkin","kettle","ice"],
+            CLEANING:["cleaning cloth","spray bottle","paper towels","trash bin"],
+            BATHROOM_HYGIENE:["soap dispenser","hand towel","toothbrush","mirror"],
+            BEAUTY:["compact mirror","hair brush","small product bottles","makeup brush","tissue"],
+            WORK:["laptop","notebook","pen","documents","phone stand","sticky notes"],
+            FITNESS:["water bottle","towel","earbuds","gym bag","timer/phone"],
+            TRAVEL:["suitcase","boarding pass","backpack","phone","carry-on"],
+            RETAIL:["basket","cart","phone","checkout counter"],
+            GENERIC:["phone","bag","keys"]
+        };
+
+        const POSE_BANK = {
+            COOKING_PREP:[
+                "standing at the counter, hips angled slightly, hands working close to the cutting board",
+                "leaning forward slightly at the island, elbows relaxed, hands seasoning the food",
+                "side-on near the stove, weight on back leg, one hand holding tongs at waist level",
+                "shoulders squared to the counter, knees soft, hands arranging pieces neatly",
+                "half-turn toward the sink, one hip near the cabinet edge, hands working over the board",
+                "staggered stance, front foot forward, hands making short controlled prep motions",
+                "slight crouch at the counter, hands close to the tray as if arranging portions",
+                "one foot lightly back, torso angled, hands patting food dry with paper towels",
+                "standing close to island, elbows tucked, hands trimming pieces neatly",
+                "weight shift toward stove, one hand on pan handle, other hovering with tongs",
+                "turned slightly toward camera, eyes down at the board, posture relaxed but active",
+                "upright stance, hands placing seasoned pieces onto a tray in a neat row"
+            ],
+            COOKING_ASSEMBLE:[
+                "standing at the counter, bowl near the edge, one hand steadying it while the other mixes",
+                "leaning into the counter slightly, shoulders relaxed, hands close to the bowl",
+                "side stance at the island, weight shifted, hands centered over the bowl",
+                "upright with small forward lean, bowl pulled close with fingertips",
+                "low relaxed stance, elbows tucked, hands stirring in small motions",
+                "feet staggered, spoon moving in small circles, gaze down at the bowl",
+                "one knee slightly bent, hands assembling items close together on the counter",
+                "upright, one hand setting bowl down, other hand adjusting its position",
+                "turning slightly to reach an ingredient, returning hands to the bowl",
+                "shoulders squared, bowl centered, hands steady and precise",
+                "leaning lightly on counter edge, hands sprinkling topping evenly",
+                "upright stance, hands pushing bowl slightly closer before continuing"
+            ],
+            DRINK_MAKE:[
+                "standing close to the counter, cup held low, elbow relaxed",
+                "side stance, one hand stirring, other hand steadying the cup",
+                "upright stance, cup set down, hand resting near the rim",
+                "slight lean in, eyes down, stirring slowly",
+                "half-turn, cup placed near edge, hand wiping a drip",
+                "seated posture, cup near lap level, small sip motion",
+                "standing, shoulders relaxed, cup rotated slightly by the rim",
+                "leaning lightly into counter, cup centered, hand steady",
+                "upright, one hand holding cup, other adjusting spoon grip",
+                "side stance, setting cup down and stepping back slightly",
+                "standing, small wrist motion stirring then stopping",
+                "upright, cup lowered, eyes up briefly then back to task"
+            ],
+            CLEANING:[
+                "standing close to the surface with a slight forward lean, wiping in short strokes",
+                "half-turn stance, weight shifting as cloth moves across the counter",
+                "hips angled to sink, one shoulder forward, wiping along the edge line",
+                "knees soft, torso slightly bent, hands pressing cloth flat",
+                "one hip near counter, wiping with far hand while other steadies an item",
+                "stepping sideways along the counter, hands moving in overlapping passes",
+                "leaning toward surface, elbows bent, wiping in small circles",
+                "standing near sink, one hand holding spray, the other wiping",
+                "small step stance, folding cloth before wiping again",
+                "upright, stacking items then wiping the cleared spot",
+                "half crouch to reach lower area, then rising to wipe top",
+                "turning slightly to toss paper towel, then returning to wiping"
+            ],
+            BATHROOM_HYGIENE:[
+                "facing the mirror at the sink, elbows bent, hands centered under faucet line",
+                "standing close to the vanity, shoulders relaxed, hands moving with small precise motions",
+                "slight lean toward mirror, one hand near towel while the other finishes task",
+                "hips squared to sink, knees soft, hands close to basin edge",
+                "half-turn toward towel rack, one shoulder back, hands finishing and resetting",
+                "upright stance, chin slightly down, hands working neatly",
+                "leaning in slightly, hands rubbing palms together under faucet",
+                "standing centered, one hand turning faucet, other poised at basin",
+                "chin lifted slightly to mirror, brushing with controlled rhythm",
+                "torso angled, towel in hand as other finishes rinsing",
+                "feet planted close, elbows tucked, patting face dry",
+                "side stance, one hip angled, placing items back in place"
+            ],
+            BEAUTY:[
+                "standing at vanity, chin slightly lifted toward the mirror, hands doing small careful motions",
+                "leaning closer to mirror, elbows tucked, fingertips applying product",
+                "hip angled to counter, one hand resting lightly while the other applies skincare",
+                "upright stance, one shoulder forward, hands near face and hairline",
+                "perched at vanity edge, hands steady close to mirror line",
+                "half-turn, checking reflection over one shoulder while adjusting details",
+                "forearms near counter, pressing product into skin with fingertips",
+                "standing close, smoothing hairline while looking at mirror",
+                "side stance, holding product in one hand, applying with the other",
+                "upright, applying gloss then lowering the tube",
+                "perched, compact mirror in hand, light blending motion",
+                "half-turn, adjusting jewelry while checking reflection"
+            ],
+            WORK:[
+                "seated at desk with straight posture, forearms resting lightly near keyboard",
+                "leaning in toward laptop, shoulders relaxed, hands active on keys",
+                "one elbow on desk, torso angled, writing with the other hand",
+                "upright seated posture, one hand on trackpad, other near notebook",
+                "standing beside desk, looking down at notes while holding a pen",
+                "seated with small forward lean, hands alternating between phone and notebook",
+                "shoulders slightly forward, holding documents and flipping a page",
+                "upright, aligning paper stack, then returning to keyboard",
+                "leaning in, highlighting a line while other hand holds page steady",
+                "seated back slightly, tapping pen once, then returning to typing",
+                "half-turn at desk, reaching for sticky notes, then back to documents",
+                "seated at desk edge, adjusting laptop angle, eyes focused"
+            ],
+            FITNESS:[
+                "athletic stance, feet shoulder-width, hands near hips between sets",
+                "slight forward hinge, hands resting on thighs during a quick rest",
+                "upright near rack, one hand holding towel, shoulders squared",
+                "side stance near bench, weight shifted, hands adjusting grip on equipment",
+                "standing tall, adjusting earbuds, other hand holding bottle",
+                "knees soft, re-racking weights with controlled posture",
+                "at mirror wall, torso angled, adjusting straps with fingertips",
+                "leaning slightly, wiping equipment, towel at side",
+                "upright, phone held low near waist while checking timer",
+                "seated on bench, elbows on knees briefly, then rising",
+                "side stance near treadmill, one hand on rail, other adjusting earbuds",
+                "standing near locker area, hands pulling towel from bag"
+            ],
+            TRAVEL:[
+                "standing with one foot forward, one hand on suitcase handle, shoulders relaxed",
+                "half-turn while checking phone low, luggage beside leg",
+                "upright, adjusting backpack strap with one hand, chin angled forward",
+                "seated at gate bench, torso angled, phone held low near lap",
+                "standing in line posture, small weight shift while holding documents",
+                "walking pause, suitcase angled behind, hand steady on handle",
+                "standing near seating, boarding pass held low, phone in other hand",
+                "half-turn, adjusting strap, looking up toward signs",
+                "seated, leaning forward slightly, plugging phone into charger",
+                "upright, shifting carry-on to the other side",
+                "walking, suitcase rolling behind, head slightly turned",
+                "standing near corridor window, phone low, other hand on strap"
+            ],
+            RETAIL:[
+                "hands on cart handle, shoulders relaxed, head turning as if scanning options",
+                "standing close to shelves, one hand reaching while the other steadies basket",
+                "side stance, item held low near waist while checking label shape",
+                "upright near checkout, basket held close, elbows bent naturally",
+                "half-turn, placing item into basket, other hand stabilizing",
+                "small step stance in aisle, cart angled slightly, hands near handle",
+                "standing near shelf, comparing two items, other hand holding basket strap",
+                "leaning slightly to check label shape (no readable text)",
+                "side stance, setting item into cart, adjusting grip",
+                "upright at checkout counter, phone held low, basket near feet",
+                "half-turn, setting basket down briefly to rearrange items",
+                "walking posture, cart rolling slowly, shoulders relaxed"
+            ],
+            GENERIC:[
+                "upright stance with slight weight shift, shoulders relaxed, hands engaged close to body",
+                "half-turn posture, one shoulder forward, hands performing small controlled movements",
+                "seated posture with torso angled slightly, hands held low near lap-level",
+                "standing with one foot slightly forward, elbows bent, hands close to task area",
+                "leaning lightly into a nearby surface, hands centered and steady",
+                "walking pause stance, body turned slightly, hands engaged in a brief action",
+                "upright stance, shoulders squared, hands setting an item down carefully",
+                "side stance, one hip angled, hands adjusting a strap then returning to task",
+                "seated, one elbow resting lightly, hands moving in small motions",
+                "standing near a surface, torso angled, hands repositioning an object",
+                "upright, chin slightly down, hands engaged near waist level",
+                "half-turn, glancing down at hands, then looking up"
+            ]
+        };
+
+        const ACTIVITY_BANK = {
+            HOME_KITCHEN:[
+                {text:"prepping lamb chops to cook", type:"COOKING_PREP", timeTags:["Afternoon","Evening","Any"]},
+                {text:"seasoning chicken on a cutting board", type:"COOKING_PREP", timeTags:["Afternoon","Evening","Any"]},
+                {text:"marinating meat and arranging it on a tray", type:"COOKING_PREP", timeTags:["Afternoon","Evening","Any"]},
+                {text:"chopping vegetables for dinner", type:"COOKING_PREP", timeTags:["Afternoon","Evening","Any"]},
+                {text:"drizzling oil into a skillet and heating it", type:"COOKING_PREP", timeTags:["Afternoon","Evening","Any"]},
+                {text:"packing leftovers into containers", type:"COOKING_ASSEMBLE", timeTags:["Afternoon","Evening","Any"]},
+                {text:"assembling a quick snack at the counter", type:"COOKING_ASSEMBLE", timeTags:["Afternoon","Evening","Any"]},
+                {text:"wiping down the kitchen island", type:"CLEANING", timeTags:["Any"]},
+                {text:"washing dishes at the sink", type:"CLEANING", timeTags:["Any"]},
+                {text:"checking a recipe on the phone while prepping", type:"COOKING_PREP", timeTags:["Afternoon","Evening","Any"]}
+            ],
+            HOME_LIVING:[
+                {text:"scrolling on the phone while seated on the couch", type:"GENERIC", timeTags:["Any"]},
+                {text:"choosing something to watch and using the remote", type:"GENERIC", timeTags:["Evening","Night","Any"]},
+                {text:"tidying the coffee table and aligning items neatly", type:"CLEANING", timeTags:["Any"]},
+                {text:"folding a small stack of laundry on the couch", type:"CLEANING", timeTags:["Afternoon","Any"]},
+                {text:"writing in a notebook at the coffee table", type:"WORK", timeTags:["Morning","Afternoon","Any"]},
+                {text:"snacking from a small bowl while watching TV", type:"COOKING_ASSEMBLE", timeTags:["Afternoon","Evening","Night","Any"]},
+                {text:"charging the phone and checking notifications", type:"GENERIC", timeTags:["Any"]},
+                {text:"taking a mirror-style photo near a window", type:"GENERIC", timeTags:["Morning","Afternoon","Any"]},
+                {text:"setting a drink down on the table and sitting back", type:"DRINK_MAKE", timeTags:["Afternoon","Evening","Night","Any"]},
+                {text:"adjusting a throw blanket and settling in", type:"GENERIC", timeTags:["Evening","Night","Any"]}
+            ],
+            HOME_BEDROOM:[
+                {text:"picking an outfit from the closet", type:"GENERIC", timeTags:["Morning","Afternoon","Any"]},
+                {text:"making the bed and smoothing the sheets", type:"CLEANING", timeTags:["Morning","Afternoon","Any"]},
+                {text:"checking the phone while sitting on the edge of the bed", type:"GENERIC", timeTags:["Any"]},
+                {text:"applying lotion and getting dressed", type:"BEAUTY", timeTags:["Morning","Afternoon","Any"]},
+                {text:"spraying perfume and smoothing clothing", type:"BEAUTY", timeTags:["Morning","Afternoon","Evening","Any"]},
+                {text:"packing a small bag for the day", type:"TRAVEL", timeTags:["Morning","Afternoon","Any"]},
+                {text:"organizing a drawer and stacking items neatly", type:"CLEANING", timeTags:["Afternoon","Any"]},
+                {text:"plugging in the phone charger and adjusting pillows", type:"GENERIC", timeTags:["Night","Late night","Any"]},
+                {text:"taking a mirror selfie near the dresser", type:"GENERIC", timeTags:["Any"]},
+                {text:"setting jewelry on the dresser and choosing pieces", type:"BEAUTY", timeTags:["Morning","Afternoon","Any"]}
+            ],
+            HOME_BATHROOM:[
+                {text:"washing hands at the sink", type:"BATHROOM_HYGIENE", timeTags:["Any"]},
+                {text:"brushing teeth at the mirror", type:"BATHROOM_HYGIENE", timeTags:["Morning","Night","Any"]},
+                {text:"doing a quick skincare routine", type:"BEAUTY", timeTags:["Morning","Night","Any"]},
+                {text:"washing face and patting dry with a towel", type:"BATHROOM_HYGIENE", timeTags:["Morning","Night","Any"]},
+                {text:"organizing items on the vanity counter", type:"CLEANING", timeTags:["Afternoon","Any"]},
+                {text:"applying lip gloss and checking the mirror", type:"BEAUTY", timeTags:["Any"]},
+                {text:"adjusting hairline/edges in the mirror", type:"BEAUTY", timeTags:["Morning","Afternoon","Evening","Any"]},
+                {text:"drying hands with a towel and hanging it back", type:"BATHROOM_HYGIENE", timeTags:["Any"]},
+                {text:"wiping the sink counter and straightening products", type:"CLEANING", timeTags:["Any"]},
+                {text:"rinsing a makeup sponge and setting it down", type:"BEAUTY", timeTags:["Any"]}
+            ],
+            HOME_OFFICE:[
+                {text:"typing on a laptop at the desk", type:"WORK", timeTags:["Morning","Afternoon","Evening","Any"]},
+                {text:"reviewing documents and highlighting notes", type:"WORK", timeTags:["Morning","Afternoon","Any"]},
+                {text:"writing notes in a planner", type:"WORK", timeTags:["Morning","Afternoon","Any"]},
+                {text:"checking a calendar and updating a to-do list", type:"WORK", timeTags:["Morning","Afternoon","Any"]},
+                {text:"organizing papers into a neat stack", type:"WORK", timeTags:["Afternoon","Any"]},
+                {text:"answering messages on the phone next to the laptop", type:"WORK", timeTags:["Any"]},
+                {text:"jotting down content ideas and flipping a page", type:"WORK", timeTags:["Any"]},
+                {text:"adjusting the laptop screen angle and leaning in to read", type:"WORK", timeTags:["Any"]},
+                {text:"writing a quick note and setting the pen down", type:"WORK", timeTags:["Any"]},
+                {text:"aligning sticky notes and placing them beside the notebook", type:"WORK", timeTags:["Any"]}
+            ],
+            GYM:[
+                {text:"re-racking dumbbells after a set", type:"FITNESS", timeTags:["Any"]},
+                {text:"checking a workout timer on the phone between sets", type:"FITNESS", timeTags:["Any"]},
+                {text:"stretching on a mat and resetting posture", type:"FITNESS", timeTags:["Any"]},
+                {text:"wiping equipment handles with a towel", type:"FITNESS", timeTags:["Any"]},
+                {text:"filling a water bottle and setting it down", type:"FITNESS", timeTags:["Any"]},
+                {text:"adjusting earbuds and rolling shoulders once", type:"FITNESS", timeTags:["Any"]},
+                {text:"resting with hands on hips after cardio", type:"FITNESS", timeTags:["Any"]},
+                {text:"standing at the mirror wall adjusting outfit", type:"FITNESS", timeTags:["Any"]},
+                {text:"setting gym bag down and pulling out a towel", type:"FITNESS", timeTags:["Any"]},
+                {text:"walking on a treadmill and checking pace", type:"FITNESS", timeTags:["Any"]}
+            ],
+            RETAIL_ERRANDS:[
+                {text:"pushing a cart while scanning shelves", type:"RETAIL", timeTags:["Any"]},
+                {text:"reaching for an item and checking the label shape", type:"RETAIL", timeTags:["Any"]},
+                {text:"placing items into a basket and adjusting grip", type:"RETAIL", timeTags:["Any"]},
+                {text:"standing at checkout with the phone held low", type:"RETAIL", timeTags:["Any"]},
+                {text:"checking a shopping list on the phone", type:"RETAIL", timeTags:["Any"]},
+                {text:"comparing two items before choosing one", type:"RETAIL", timeTags:["Any"]},
+                {text:"walking down an aisle and turning into the next row", type:"RETAIL", timeTags:["Any"]},
+                {text:"setting basket down briefly to rearrange items", type:"RETAIL", timeTags:["Any"]},
+                {text:"picking up a product and putting it back neatly", type:"RETAIL", timeTags:["Any"]},
+                {text:"exiting the store holding a small bag", type:"RETAIL", timeTags:["Any"]}
+            ],
+            TRAVEL_TRANSIT:[
+                {text:"pulling a suitcase while checking the phone briefly", type:"TRAVEL", timeTags:["Any"]},
+                {text:"adjusting a backpack strap and shifting it higher", type:"TRAVEL", timeTags:["Any"]},
+                {text:"standing near a gate and scanning the area", type:"TRAVEL", timeTags:["Any"]},
+                {text:"holding a boarding pass and waiting in line", type:"TRAVEL", timeTags:["Any"]},
+                {text:"setting carry-on down and checking messages", type:"TRAVEL", timeTags:["Any"]},
+                {text:"sitting at gate seating and charging the phone", type:"TRAVEL", timeTags:["Any"]},
+                {text:"rolling luggage past a windowed hallway", type:"TRAVEL", timeTags:["Any"]},
+                {text:"checking a flight update and putting phone away", type:"TRAVEL", timeTags:["Any"]},
+                {text:"standing at check-in with one hand on suitcase handle", type:"TRAVEL", timeTags:["Any"]},
+                {text:"walking through terminal with steady pace", type:"TRAVEL", timeTags:["Any"]}
+            ],
+            VEHICLE:[
+                {text:"fastening the seatbelt and settling back", type:"GENERIC", timeTags:["Any"]},
+                {text:"checking directions on the phone and looking up", type:"TRAVEL", timeTags:["Any"]},
+                {text:"setting the phone into the console and looking forward", type:"GENERIC", timeTags:["Any"]},
+                {text:"adjusting a bag on the lap and repositioning grip", type:"GENERIC", timeTags:["Any"]},
+                {text:"turning slightly toward the driver mid-conversation", type:"GENERIC", timeTags:["Any"]},
+                {text:"checking notifications while parked", type:"GENERIC", timeTags:["Any"]},
+                {text:"glancing out the window then back to the phone", type:"GENERIC", timeTags:["Any"]},
+                {text:"placing a drink into the cupholder", type:"DRINK_MAKE", timeTags:["Any"]},
+                {text:"adjusting the mirror and looking forward", type:"GENERIC", timeTags:["Any"]},
+                {text:"shifting posture and relaxing shoulders", type:"GENERIC", timeTags:["Any"]}
+            ],
+            GENERIC_INDOOR_PUBLIC:[
+                {text:"checking the phone briefly while standing naturally", type:"GENERIC", timeTags:["Any"]},
+                {text:"adjusting a bag strap and shifting weight", type:"GENERIC", timeTags:["Any"]},
+                {text:"setting an item down carefully on a nearby surface", type:"GENERIC", timeTags:["Any"]},
+                {text:"scrolling then locking the phone screen", type:"GENERIC", timeTags:["Any"]},
+                {text:"writing a quick note in a notebook while standing", type:"WORK", timeTags:["Morning","Afternoon","Any"]},
+                {text:"waiting and glancing up at the surroundings", type:"GENERIC", timeTags:["Any"]},
+                {text:"taking a quick mirror-style photo in a reflective surface", type:"GENERIC", timeTags:["Any"]},
+                {text:"holding a drink low and stepping forward", type:"DRINK_MAKE", timeTags:["Afternoon","Any"]},
+                {text:"checking messages and putting phone away", type:"GENERIC", timeTags:["Any"]},
+                {text:"holding a small bag and repositioning grip", type:"GENERIC", timeTags:["Any"]}
+            ]
+        };
+
+        const WARDROBE_LIBRARY = [
+            {vibe:"Lifestyle", contexts:["HOME_KITCHEN","HOME_LIVING","HOME_BEDROOM","HOME_OFFICE"], name:"Contour rib lounge set", pieces:"snatched ribbed crop top and high-waisted rib shorts", fabric:"stretch rib knit with visible rib texture, realistic compression, natural creasing at waist and hips", footwear:"slides or barefoot"},
+            {vibe:"Lifestyle", contexts:["HOME_LIVING","HOME_BEDROOM"], name:"Soft drape tee dress", pieces:"fitted tee dress with clean neckline and short sleeves", fabric:"cotton jersey with natural drape and gentle wrinkling at hip and hem", footwear:"plush slides or barefoot"},
+            {vibe:"Lifestyle", contexts:["HOME_KITCHEN","HOME_LIVING","RETAIL_ERRANDS"], name:"Tank + biker short set", pieces:"snatched stretch tank and high-waisted biker shorts", fabric:"matte compression knit with seam lines and realistic stretch mapping", footwear:"clean sneakers or slides"},
+            {vibe:"Lifestyle", contexts:["HOME_OFFICE","GENERIC_INDOOR_PUBLIC"], name:"Clean fitted set", pieces:"fitted crew tee and stacked ruched leggings", fabric:"soft knit tee with natural drape; leggings have gathered ruching and stretch tension lines", footwear:"clean sneakers"},
+            {vibe:"Lifestyle", contexts:["HOME_LIVING","OUTDOOR_DAY","RETAIL_ERRANDS"], name:"Zip jacket + flare leggings", pieces:"cropped zip jacket and high-waisted flare leggings", fabric:"smooth stretch knit with subtle sheen; flare hem shows realistic fold behavior", footwear:"clean trainers"},
+            {vibe:"Lifestyle", contexts:["HOME_KITCHEN","HOME_LIVING"], name:"Sleeveless bodycon mini", pieces:"simple sleeveless bodycon mini dress", fabric:"smooth stretch knit, clean seam lines, realistic tension at hips", footwear:"house slides"},
+            {vibe:"Lifestyle", contexts:["RETAIL_ERRANDS","OUTDOOR_DAY","GENERIC_INDOOR_PUBLIC"], name:"Sculpt cami + cargo joggers", pieces:"snatched cami top and lightweight cargo joggers", fabric:"cami is stretch knit; joggers are matte woven with pocket structure and natural knee bunching", footwear:"clean sneakers"},
+            {vibe:"Lifestyle", contexts:["HOME_OFFICE","WORKPLACE","GENERIC_INDOOR_PUBLIC"], name:"Polished knit set", pieces:"short-sleeve knit top and matching knit midi skirt", fabric:"structured knit with subtle rib, clean edges, minimal wrinkling", footwear:"sleek flats"},
+            {vibe:"Lifestyle", contexts:["OUTDOOR_DAY","RETAIL_ERRANDS"], name:"Denim mini + fitted tee", pieces:"fitted tee and high-waisted denim mini skirt", fabric:"tee is soft jersey; denim has visible stitching, realistic creasing at hip", footwear:"clean sneakers"},
+            {vibe:"Lifestyle", contexts:["HOME_BEDROOM","HOME_LIVING"], name:"Cropped hoodie + lounge shorts", pieces:"cropped hoodie and fitted lounge shorts", fabric:"hoodie fleece texture; shorts are rib knit with stretch recovery", footwear:"slides or barefoot"},
+            {vibe:"Lifestyle", contexts:["VEHICLE","TRAVEL_TRANSIT","GENERIC_INDOOR_PUBLIC"], name:"Travel cardigan set", pieces:"fitted tank, soft cardigan, and high-waisted leggings", fabric:"cardigan knit has visible weave; leggings matte compression with seams", footwear:"clean sneakers"},
+            {vibe:"Lifestyle", contexts:["HOME_KITCHEN","HOME_LIVING"], name:"Apron-layered lounge", pieces:"fitted tank and lounge shorts with a simple tied apron layer", fabric:"tank knit + rib short; apron is light cotton with realistic tie folds", footwear:"slides or barefoot"},
+            {vibe:"Cozy Home", contexts:["HOME_LIVING","HOME_BEDROOM"], name:"Plush short pajama set", pieces:"soft pajama button top and matching pajama shorts", fabric:"brushed knit with cozy texture and natural bunching at seams", footwear:"barefoot"},
+            {vibe:"Cozy Home", contexts:["HOME_LIVING","HOME_BEDROOM"], name:"Satin cami + robe", pieces:"silky cami and shorts with a lightweight robe", fabric:"satin-like sheen with realistic folds and edge piping", footwear:"plush slides"},
+            {vibe:"Cozy Home", contexts:["HOME_LIVING"], name:"Off-shoulder knit set", pieces:"off-shoulder slouch knit top and fitted lounge shorts", fabric:"soft knit with relaxed drape and realistic sleeve bunching", footwear:"barefoot"},
+            {vibe:"Cozy Home", contexts:["HOME_BEDROOM","HOME_LIVING"], name:"Cardigan + matching lounge", pieces:"ribbed bralette, cardigan, and high-waisted lounge shorts", fabric:"rib knit with visible texture and natural stretch creasing", footwear:"slides"},
+            {vibe:"Cozy Home", contexts:["HOME_BEDROOM"], name:"Sleep romper", pieces:"fitted sleep romper with thin straps", fabric:"soft modal knit with gentle sheen and minimal wrinkling", footwear:"barefoot"},
+            {vibe:"Cozy Home", contexts:["HOME_LIVING"], name:"Oversized sweatshirt + shorties", pieces:"oversized sweatshirt and fitted lounge shorts", fabric:"sweatshirt fleece with cuff structure; shorts are rib knit", footwear:"plush slides"},
+            {vibe:"Cozy Home", contexts:["HOME_BEDROOM","HOME_LIVING"], name:"Wrap knit dress", pieces:"soft wrap-style knit mini dress", fabric:"knit drape with wrap folds and tie tension lines", footwear:"barefoot"},
+            {vibe:"Cozy Home", contexts:["HOME_BEDROOM"], name:"Cami + wide-leg lounge", pieces:"fitted cami and soft wide-leg lounge pants", fabric:"cami stretch knit; pants have jersey drape and hem pooling", footwear:"barefoot"},
+            {vibe:"Cozy Home", contexts:["HOME_LIVING"], name:"Soft hoodie dress", pieces:"hoodie mini dress with relaxed fit", fabric:"cotton fleece with natural wrinkles at waist and sleeves", footwear:"slides"},
+            {vibe:"Cozy Home", contexts:["HOME_LIVING","HOME_KITCHEN"], name:"Thermal set", pieces:"thermal longline tee and fitted lounge shorts", fabric:"waffle knit texture with realistic stretch and seam lines", footwear:"slides or barefoot"},
+            {vibe:"Cozy Home", contexts:["HOME_BATHROOM","HOME_BEDROOM"], name:"Post-shower towel wrap + slippers", pieces:"secure towel wrap and cozy slippers", fabric:"terry cloth texture with realistic folds and towel edge stitching", footwear:"cozy slippers"},
+            {vibe:"Cozy Home", contexts:["HOME_LIVING"], name:"Cropped knit + fold-over shorts", pieces:"cropped knit top and fold-over waistband lounge shorts", fabric:"soft knit with fold-over waistband creasing and realistic stretch", footwear:"barefoot"},
+            {vibe:"Errands/Retail", contexts:["RETAIL_ERRANDS","OUTDOOR_DAY","GENERIC_INDOOR_PUBLIC"], name:"Baddie athleisure set", pieces:"contour crop top and high-waisted sculpt leggings", fabric:"matte compression knit, visible seams, realistic stretch at knees and hips", footwear:"clean trainers"},
+            {vibe:"Errands/Retail", contexts:["RETAIL_ERRANDS","OUTDOOR_DAY"], name:"Cropped jacket + biker shorts", pieces:"cropped lightweight jacket and high-waisted biker shorts", fabric:"jacket is matte woven; shorts are compression knit with seam lines", footwear:"clean sneakers"},
+            {vibe:"Errands/Retail", contexts:["RETAIL_ERRANDS"], name:"Denim mini + fitted bodysuit", pieces:"snatched bodysuit and high-waisted denim mini skirt", fabric:"bodysuit stretch knit; denim has stitching, realistic crease lines", footwear:"sleek sneakers"},
+            {vibe:"Errands/Retail", contexts:["OUTDOOR_DAY","RETAIL_ERRANDS"], name:"Cargo mini + fitted tee", pieces:"fitted tee and cargo mini skirt with pockets", fabric:"tee soft jersey; skirt is woven with pocket structure and crisp seams", footwear:"clean sneakers"},
+            {vibe:"Errands/Retail", contexts:["RETAIL_ERRANDS","GENERIC_INDOOR_PUBLIC"], name:"Ribbed midi + sneakers", pieces:"ribbed sleeveless midi dress", fabric:"rib knit with vertical texture, natural creasing at hip and hem", footwear:"clean sneakers"},
+            {vibe:"Errands/Retail", contexts:["OUTDOOR_DAY"], name:"Tube top + relaxed jeans", pieces:"snatched tube top and high-waisted relaxed straight jeans", fabric:"top stretch knit; denim shows realistic whiskering and seams", footwear:"clean sneakers"},
+            {vibe:"Errands/Retail", contexts:["RETAIL_ERRANDS"], name:"Matching short set", pieces:"boxy cropped top and high-waisted tailored shorts", fabric:"structured cotton blend, crisp hem and seams, minimal wrinkling", footwear:"sleek flats"},
+            {vibe:"Errands/Retail", contexts:["OUTDOOR_DAY","RETAIL_ERRANDS"], name:"Sporty romper", pieces:"zip-front fitted romper", fabric:"compression knit with zipper detail and seam lines", footwear:"clean trainers"},
+            {vibe:"Errands/Retail", contexts:["RETAIL_ERRANDS","GENERIC_INDOOR_PUBLIC"], name:"Corset tee + flare leggings", pieces:"corset-seamed fitted tee and flare leggings", fabric:"tee has seam shaping; leggings smooth knit with realistic flare folds", footwear:"clean sneakers"},
+            {vibe:"Errands/Retail", contexts:["OUTDOOR_DAY"], name:"Mini dress + light jacket", pieces:"fitted mini dress and lightweight cropped jacket", fabric:"dress smooth knit; jacket matte woven with realistic sleeve creasing", footwear:"clean sneakers"},
+            {vibe:"Errands/Retail", contexts:["RETAIL_ERRANDS"], name:"Sculpt tank + pleated mini", pieces:"snatched tank and high-waisted pleated mini skirt", fabric:"tank stretch knit; skirt woven with pleat structure and crisp edges", footwear:"sleek flats"},
+            {vibe:"Errands/Retail", contexts:["VEHICLE","RETAIL_ERRANDS"], name:"On-the-go set", pieces:"fitted longline tank and ruched mini skirt", fabric:"stretch knit with ruching texture and tension lines", footwear:"clean sneakers"},
+            {vibe:"Fitness/Gym", contexts:["GYM"], name:"Sculpt bra + leggings", pieces:"high-support sports bra and high-waisted performance leggings", fabric:"matte compression fabric, visible seams, realistic stretch mapping", footwear:"trainers"},
+            {vibe:"Fitness/Gym", contexts:["GYM"], name:"Zip top + shorts", pieces:"zip-front fitted top and high-waisted performance shorts", fabric:"performance knit with zipper detail and seam lines", footwear:"trainers"},
+            {vibe:"Fitness/Gym", contexts:["GYM"], name:"One-piece gym romper", pieces:"fitted one-piece athletic romper", fabric:"compression knit, clean seams, realistic tension at hips and thighs", footwear:"trainers"},
+            {vibe:"Fitness/Gym", contexts:["GYM"], name:"Longline bra + flare leggings", pieces:"longline sports bra and performance flare leggings", fabric:"smooth performance knit, flare hem folds and seam lines", footwear:"trainers"},
+            {vibe:"Fitness/Gym", contexts:["GYM"], name:"Compression tee + leggings", pieces:"fitted compression tee and high-waisted leggings", fabric:"matte knit with stretch recovery and seam shaping", footwear:"trainers"},
+            {vibe:"Fitness/Gym", contexts:["GYM"], name:"Crop hoodie + shorts", pieces:"cropped hoodie and high-waisted performance shorts", fabric:"hoodie fleece texture; shorts compression knit", footwear:"trainers"},
+            {vibe:"Fitness/Gym", contexts:["GYM"], name:"Tank + scrunch shorts", pieces:"snatched tank and scrunch-detail shorts", fabric:"compression knit with scrunch seam detail and realistic stretch", footwear:"trainers"},
+            {vibe:"Fitness/Gym", contexts:["GYM"], name:"Strappy bra + leggings", pieces:"strappy-back sports bra and high-waisted leggings", fabric:"performance knit with strap structure and seam lines", footwear:"trainers"},
+            {vibe:"Fitness/Gym", contexts:["GYM"], name:"Mesh-layer set", pieces:"sports bra, leggings, and a sheer mesh long-sleeve layer", fabric:"bra/leggings compression knit; mesh layer shows transparency and stretch", footwear:"trainers"},
+            {vibe:"Fitness/Gym", contexts:["GYM"], name:"Runner short set", pieces:"fitted crop top and high-waisted runner shorts", fabric:"stretch knit top; shorts woven-performance with hem movement", footwear:"trainers"},
+            {vibe:"Fitness/Gym", contexts:["GYM"], name:"Tennis-core gym set", pieces:"fitted top and performance skort", fabric:"top stretch knit; skort woven with short underlayer and seam lines", footwear:"trainers"},
+            {vibe:"Fitness/Gym", contexts:["GYM"], name:"Warmup set", pieces:"fitted tank and lightweight track pants", fabric:"tank stretch knit; pants woven with natural knee bunching", footwear:"trainers"},
+            {vibe:"UGC Creator", contexts:["HOME_OFFICE","WORKPLACE","GENERIC_INDOOR_PUBLIC"], name:"Creator clean set", pieces:"fitted crew tee and high-waisted sculpt leggings", fabric:"soft tee drape; leggings matte compression with seam lines", footwear:"clean sneakers"},
+            {vibe:"UGC Creator", contexts:["HOME_OFFICE"], name:"On-camera knit set", pieces:"short-sleeve knit top and fitted knit mini skirt", fabric:"structured knit with clean edges and minimal wrinkling", footwear:"sleek flats"},
+            {vibe:"UGC Creator", contexts:["HOME_OFFICE","GENERIC_INDOOR_PUBLIC"], name:"Monochrome short set", pieces:"boxy crop top and tailored high-waisted shorts", fabric:"structured cotton blend with crisp hems and seam lines", footwear:"clean sneakers"},
+            {vibe:"UGC Creator", contexts:["HOME_OFFICE","WORKPLACE"], name:"Soft blazer mini look", pieces:"sleeveless fitted mini dress with a light blazer draped on shoulders", fabric:"dress is structured knit; blazer woven with shoulder structure", footwear:"sleek flats"},
+            {vibe:"UGC Creator", contexts:["GENERIC_INDOOR_PUBLIC"], name:"Content day midi", pieces:"ribbed sleeveless midi dress", fabric:"rib knit texture, realistic creasing at hip and hem", footwear:"clean sneakers"},
+            {vibe:"UGC Creator", contexts:["HOME_OFFICE"], name:"Cami + cardigan + skirt", pieces:"snatched cami, soft cardigan, fitted knit skirt", fabric:"cami stretch knit; cardigan knit weave; skirt structured knit", footwear:"sleek flats"},
+            {vibe:"UGC Creator", contexts:["WORKPLACE","GENERIC_INDOOR_PUBLIC"], name:"Polished mini dress", pieces:"tailored mini dress with clean neckline", fabric:"structured crepe-knit with crisp seams, minimal wrinkling", footwear:"sleek flats"},
+            {vibe:"UGC Creator", contexts:["HOME_OFFICE"], name:"Zip top + midi skirt", pieces:"zip-front fitted top and high-waisted midi skirt", fabric:"top performance knit; skirt structured knit with clean hem", footwear:"sleek flats"},
+            {vibe:"UGC Creator", contexts:["HOME_OFFICE","GENERIC_INDOOR_PUBLIC"], name:"Sculpt tank + cargo mini", pieces:"snatched tank and cargo mini skirt with pockets", fabric:"tank stretch knit; skirt woven with pocket structure and seam lines", footwear:"clean sneakers"},
+            {vibe:"UGC Creator", contexts:["HOME_OFFICE"], name:"Oversized shirt + mini", pieces:"oversized button shirt layered over fitted mini dress", fabric:"shirt crisp cotton with sleeve creasing; dress smooth knit", footwear:"sleek flats"},
+            {vibe:"UGC Creator", contexts:["GENERIC_INDOOR_PUBLIC","WORKPLACE"], name:"Structured knit dress", pieces:"structured knit mini dress with contour seams", fabric:"structured knit with seam shaping and clean edges", footwear:"sleek flats"},
+            {vibe:"UGC Creator", contexts:["HOME_OFFICE"], name:"Creator lounge polish", pieces:"fitted longline tank and fold-over lounge shorts", fabric:"soft knit with fold-over waist creasing and stretch recovery", footwear:"slides"},
+            {vibe:"Office/Workday", contexts:["WORKPLACE","HOME_OFFICE","GENERIC_INDOOR_PUBLIC"], name:"Tailored mini dress", pieces:"structured tailored mini dress", fabric:"structured crepe with crisp seams and clean hem", footwear:"sleek flats"},
+            {vibe:"Office/Workday", contexts:["WORKPLACE","HOME_OFFICE"], name:"Knit collar dress", pieces:"short-sleeve knit collar mini dress", fabric:"structured knit with collar detail and minimal wrinkling", footwear:"sleek flats"},
+            {vibe:"Office/Workday", contexts:["WORKPLACE"], name:"Sleeveless sheath mini", pieces:"sleek sleeveless sheath mini dress", fabric:"smooth structured knit with clean seam lines", footwear:"sleek flats"},
+            {vibe:"Office/Workday", contexts:["WORKPLACE","GENERIC_INDOOR_PUBLIC"], name:"Blazer-style mini dress", pieces:"tailored blazer mini dress with defined waist", fabric:"woven suiting texture with button detail and sharp seams", footwear:"sleek flats"},
+            {vibe:"Office/Workday", contexts:["HOME_OFFICE","WORKPLACE"], name:"Ribbed midi work dress", pieces:"ribbed sleeveless midi dress with clean neckline", fabric:"rib knit with realistic texture and hem weight", footwear:"sleek flats"},
+            {vibe:"Office/Workday", contexts:["WORKPLACE"], name:"Power mini with belt", pieces:"tailored mini dress with a slim belt detail", fabric:"structured crepe with belt tension folds and seam lines", footwear:"sleek flats"},
+            {vibe:"Office/Workday", contexts:["WORKPLACE","GENERIC_INDOOR_PUBLIC"], name:"Structured knit set", pieces:"fitted knit top and matching knit mini skirt", fabric:"structured knit with clean edges and minimal wrinkling", footwear:"sleek flats"},
+            {vibe:"Office/Workday", contexts:["HOME_OFFICE"], name:"Desk-day mini dress", pieces:"fitted mini dress with contour seams", fabric:"smooth knit with seam shaping and realistic stretch", footwear:"sleek flats"},
+            {vibe:"Office/Workday", contexts:["WORKPLACE"], name:"Sleeveless wrap mini", pieces:"wrap-style mini dress with clean wrap fold", fabric:"structured knit with wrap folds and seam lines", footwear:"sleek flats"},
+            {vibe:"Office/Workday", contexts:["WORKPLACE","HOME_OFFICE"], name:"Monochrome knit dress", pieces:"structured knit mini dress with short sleeves", fabric:"dense knit with clean hem and minimal creasing", footwear:"sleek flats"},
+            {vibe:"Office/Workday", contexts:["WORKPLACE","GENERIC_INDOOR_PUBLIC"], name:"Polished mini + light coat", pieces:"tailored mini dress with a light coat draped over shoulders", fabric:"dress structured crepe; coat woven with realistic fold and collar structure", footwear:"sleek flats"},
+            {vibe:"Office/Workday", contexts:["HOME_OFFICE","WORKPLACE"], name:"Client-call dress", pieces:"sleek fitted mini dress with simple neckline", fabric:"smooth knit with clean seams and realistic drape", footwear:"sleek flats"},
+            {vibe:"Travel/On-the-go", contexts:["TRAVEL_TRANSIT","VEHICLE","GENERIC_INDOOR_PUBLIC"], name:"Travel sweatsuit set", pieces:"matching hoodie and joggers", fabric:"cotton blend with realistic bunching at knees and sleeves", footwear:"clean sneakers"},
+            {vibe:"Travel/On-the-go", contexts:["TRAVEL_TRANSIT","VEHICLE"], name:"Zip jacket + leggings", pieces:"cropped zip jacket and high-waisted leggings", fabric:"smooth stretch knit with seam lines and realistic tension", footwear:"clean sneakers"},
+            {vibe:"Travel/On-the-go", contexts:["TRAVEL_TRANSIT"], name:"Ribbed tank dress", pieces:"ribbed sleeveless midi dress", fabric:"rib knit texture with realistic hem weight and creasing", footwear:"clean sneakers"},
+            {vibe:"Travel/On-the-go", contexts:["TRAVEL_TRANSIT","GENERIC_INDOOR_PUBLIC"], name:"Cardigan travel set", pieces:"fitted tank, soft cardigan, and sculpt leggings", fabric:"cardigan knit weave; leggings matte compression with seams", footwear:"clean sneakers"},
+            {vibe:"Travel/On-the-go", contexts:["VEHICLE"], name:"On-the-road mini", pieces:"fitted mini dress with light jacket", fabric:"dress smooth knit; jacket matte woven with sleeve creasing", footwear:"clean sneakers"},
+            {vibe:"Travel/On-the-go", contexts:["TRAVEL_TRANSIT"], name:"Airport short set", pieces:"tailored high-waisted shorts and fitted top", fabric:"structured cotton blend with crisp hems and seam lines", footwear:"clean sneakers"},
+            {vibe:"Travel/On-the-go", contexts:["TRAVEL_TRANSIT","VEHICLE"], name:"Crewneck + biker shorts", pieces:"oversized crewneck sweatshirt and high-waisted biker shorts", fabric:"fleece top with cuff structure; shorts compression knit", footwear:"clean sneakers"},
+            {vibe:"Travel/On-the-go", contexts:["TRAVEL_TRANSIT"], name:"Track set", pieces:"lightweight zip jacket and track pants", fabric:"woven track fabric with natural knee bunching and zip detail", footwear:"clean sneakers"},
+            {vibe:"Travel/On-the-go", contexts:["GENERIC_INDOOR_PUBLIC"], name:"Travel knit dress", pieces:"structured knit mini dress", fabric:"structured knit with clean seams and minimal wrinkling", footwear:"clean sneakers"},
+            {vibe:"Travel/On-the-go", contexts:["VEHICLE"], name:"Tank + flare leggings", pieces:"snatched tank and flare leggings", fabric:"top stretch knit; leggings smooth knit with flare folds", footwear:"clean sneakers"},
+            {vibe:"Travel/On-the-go", contexts:["TRAVEL_TRANSIT"], name:"Compression tee + joggers", pieces:"fitted tee and joggers", fabric:"tee soft knit drape; joggers woven with elastic waist and knee creasing", footwear:"clean sneakers"},
+            {vibe:"Travel/On-the-go", contexts:["TRAVEL_TRANSIT","GENERIC_INDOOR_PUBLIC"], name:"Sporty romper", pieces:"zip-front fitted romper", fabric:"compression knit with zipper detail and seam lines", footwear:"clean sneakers"},
+            {vibe:"Nightlife", contexts:["NIGHTLIFE","OUTDOOR_NIGHT"], name:"Sculpt mini dress", pieces:"form-fitting mini dress", fabric:"smooth stretch knit with realistic folds at movement points and visible seams", footwear:"strappy heels"},
+            {vibe:"Nightlife", contexts:["NIGHTLIFE"], name:"Cutout mini dress", pieces:"fitted mini dress with tasteful cutout detail", fabric:"stretch knit with clean cut edges and seam structure", footwear:"strappy heels"},
+            {vibe:"Nightlife", contexts:["NIGHTLIFE","OUTDOOR_NIGHT"], name:"Corset mini dress", pieces:"corset-structured mini dress", fabric:"structured knit with boning seam lines and crisp shape", footwear:"strappy heels"},
+            {vibe:"Nightlife", contexts:["NIGHTLIFE"], name:"One-shoulder mini", pieces:"one-shoulder fitted mini dress", fabric:"smooth knit with shoulder tension lines and clean seams", footwear:"strappy heels"},
+            {vibe:"Nightlife", contexts:["NIGHTLIFE"], name:"Shimmer knit mini", pieces:"fitted mini dress with subtle shimmer texture", fabric:"knit with controlled highlight and realistic folds, no glow effects", footwear:"strappy heels"},
+            {vibe:"Nightlife", contexts:["NIGHTLIFE"], name:"Satin slip mini", pieces:"satin slip mini dress with thin straps", fabric:"satin-like sheen with realistic drape folds and edge piping", footwear:"strappy heels"},
+            {vibe:"Nightlife", contexts:["NIGHTLIFE","OUTDOOR_NIGHT"], name:"Ruched mini dress", pieces:"ruched fitted mini dress", fabric:"stretch knit with ruching texture and tension lines", footwear:"strappy heels"},
+            {vibe:"Nightlife", contexts:["NIGHTLIFE"], name:"Mock-neck mini", pieces:"fitted mock-neck mini dress", fabric:"dense knit with clean hem and minimal creasing", footwear:"strappy heels"},
+            {vibe:"Nightlife", contexts:["NIGHTLIFE"], name:"Bodycon with sheer layer", pieces:"fitted mini dress with a sheer mesh overlay layer", fabric:"dress smooth knit; mesh overlay shows transparency and stretch", footwear:"strappy heels"},
+            {vibe:"Nightlife", contexts:["NIGHTLIFE"], name:"Leather-look mini", pieces:"fitted mini dress with leather-look texture", fabric:"matte faux-leather sheen with seam lines and realistic crease behavior", footwear:"strappy heels"},
+            {vibe:"Nightlife", contexts:["NIGHTLIFE"], name:"Blazer mini dress", pieces:"tailored blazer mini dress with defined waist", fabric:"woven suiting texture with sharp seams and button detail", footwear:"sleek heels"},
+            {vibe:"Nightlife", contexts:["OUTDOOR_NIGHT"], name:"Night street mini", pieces:"fitted top and structured mini skirt", fabric:"top smooth knit; skirt woven with crisp seams and hem", footwear:"heels or clean boots"},
+            {vibe:"Luxury Brand", contexts:["WORKPLACE","HOME_OFFICE","GENERIC_INDOOR_PUBLIC","NIGHTLIFE"], name:"Tailored couture mini", pieces:"structured tailored mini dress with contour seams", fabric:"structured crepe with crisp edges, clean seams, minimal wrinkling", footwear:"sleek heels"},
+            {vibe:"Luxury Brand", contexts:["GENERIC_INDOOR_PUBLIC","WORKPLACE"], name:"Structured knit mini", pieces:"structured knit mini dress with clean neckline", fabric:"dense knit with seam shaping and controlled highlights", footwear:"sleek heels"},
+            {vibe:"Luxury Brand", contexts:["NIGHTLIFE","GENERIC_INDOOR_PUBLIC"], name:"Satin statement mini", pieces:"satin mini dress with subtle drape and clean straps", fabric:"satin-like sheen with realistic folds and edge piping", footwear:"sleek heels"},
+            {vibe:"Luxury Brand", contexts:["WORKPLACE","GENERIC_INDOOR_PUBLIC"], name:"Blazer mini dress", pieces:"tailored blazer mini dress", fabric:"woven suiting texture with sharp seams and button detail", footwear:"sleek heels"},
+            {vibe:"Luxury Brand", contexts:["GENERIC_INDOOR_PUBLIC"], name:"Architectural mini dress", pieces:"structured mini dress with sculpted neckline", fabric:"structured crepe with crisp seam lines and minimal creasing", footwear:"sleek heels"},
+            {vibe:"Luxury Brand", contexts:["WORKPLACE","HOME_OFFICE"], name:"Power knit set", pieces:"fitted knit top and matching knit mini skirt", fabric:"structured knit with clean edges and minimal wrinkling", footwear:"sleek heels"},
+            {vibe:"Luxury Brand", contexts:["GENERIC_INDOOR_PUBLIC","NIGHTLIFE"], name:"Shimmer texture mini", pieces:"fitted mini dress with refined shimmer texture", fabric:"controlled highlight knit, realistic folds, no glow effects", footwear:"sleek heels"},
+            {vibe:"Luxury Brand", contexts:["WORKPLACE"], name:"Sleeveless sheath mini", pieces:"sleek sleeveless sheath mini dress", fabric:"smooth structured knit with crisp seams", footwear:"sleek heels"},
+            {vibe:"Luxury Brand", contexts:["GENERIC_INDOOR_PUBLIC"], name:"Wrap mini dress", pieces:"wrap-style mini dress", fabric:"structured knit with wrap folds and seam lines", footwear:"sleek heels"},
+            {vibe:"Luxury Brand", contexts:["HOME_OFFICE","WORKPLACE"], name:"Client-day mini", pieces:"tailored fitted mini dress", fabric:"structured crepe-knit with clean hem and minimal wrinkling", footwear:"sleek heels"},
+            {vibe:"Luxury Brand", contexts:["GENERIC_INDOOR_PUBLIC"], name:"Minimalist bodycon mini", pieces:"sleek bodycon mini dress", fabric:"smooth stretch knit with seam shaping and tension lines", footwear:"sleek heels"},
+            {vibe:"Luxury Brand", contexts:["NIGHTLIFE"], name:"Evening luxe mini", pieces:"corset-structured mini dress", fabric:"structured knit with boning seam lines and clean edges", footwear:"sleek heels"},
+            {vibe:"Outdoors/Day", contexts:["OUTDOOR_DAY"], name:"Street set leggings", pieces:"snatched crop top and high-waisted flare leggings", fabric:"smooth knit with realistic flare folds and seam lines", footwear:"clean sneakers"},
+            {vibe:"Outdoors/Day", contexts:["OUTDOOR_DAY"], name:"Denim mini + bodysuit", pieces:"snatched bodysuit and high-waisted denim mini skirt", fabric:"bodysuit stretch knit; denim stitching and realistic creases", footwear:"clean sneakers"},
+            {vibe:"Outdoors/Day", contexts:["OUTDOOR_DAY"], name:"Cargo mini + fitted top", pieces:"fitted top and cargo mini skirt", fabric:"top soft knit; skirt woven with pocket structure and crisp seams", footwear:"clean sneakers"},
+            {vibe:"Outdoors/Day", contexts:["OUTDOOR_DAY"], name:"Sporty romper", pieces:"zip-front fitted romper", fabric:"compression knit with zipper detail and seam lines", footwear:"clean trainers"},
+            {vibe:"Outdoors/Day", contexts:["OUTDOOR_DAY"], name:"Ribbed midi + sneakers", pieces:"ribbed sleeveless midi dress", fabric:"rib knit texture with realistic hem weight", footwear:"clean sneakers"},
+            {vibe:"Outdoors/Day", contexts:["OUTDOOR_DAY"], name:"Tube top + relaxed jeans", pieces:"snatched tube top and relaxed straight jeans", fabric:"top stretch knit; denim shows seams and natural bunching at knee", footwear:"clean sneakers"},
+            {vibe:"Outdoors/Day", contexts:["OUTDOOR_DAY"], name:"Mini dress + light jacket", pieces:"fitted mini dress and lightweight cropped jacket", fabric:"dress smooth knit; jacket matte woven with sleeve creasing", footwear:"clean sneakers"},
+            {vibe:"Outdoors/Day", contexts:["OUTDOOR_DAY"], name:"Knit set mini", pieces:"fitted knit top and knit mini skirt", fabric:"structured knit with clean edges and minimal wrinkling", footwear:"clean sneakers"},
+            {vibe:"Outdoors/Day", contexts:["OUTDOOR_DAY"], name:"Biker short set", pieces:"snatched tank and biker shorts", fabric:"matte compression knit with seam lines", footwear:"clean sneakers"},
+            {vibe:"Outdoors/Day", contexts:["OUTDOOR_DAY"], name:"Pleated mini + tank", pieces:"snatched tank and pleated mini skirt", fabric:"tank stretch knit; skirt woven with pleat structure and crisp hem", footwear:"clean sneakers"},
+            {vibe:"Outdoors/Day", contexts:["OUTDOOR_DAY"], name:"Skort set", pieces:"fitted top and performance skort", fabric:"top knit; skort woven with short underlayer and seam lines", footwear:"clean sneakers"},
+            {vibe:"Outdoors/Day", contexts:["OUTDOOR_DAY"], name:"Corset tee + jeans", pieces:"corset-seamed fitted tee and high-waisted jeans", fabric:"tee seam shaping; denim shows realistic whiskering and seams", footwear:"clean sneakers"},
+            {vibe:"Outdoors/Night", contexts:["OUTDOOR_NIGHT"], name:"Night street mini", pieces:"fitted top and structured mini skirt", fabric:"top smooth knit; skirt woven with crisp seams and hem", footwear:"heels or clean boots"},
+            {vibe:"Outdoors/Night", contexts:["OUTDOOR_NIGHT"], name:"Ruched mini dress", pieces:"ruched fitted mini dress", fabric:"stretch knit ruching with tension lines", footwear:"strappy heels"},
+            {vibe:"Outdoors/Night", contexts:["OUTDOOR_NIGHT"], name:"Satin slip mini", pieces:"satin slip mini dress", fabric:"satin-like sheen with realistic folds and edge piping", footwear:"strappy heels"},
+            {vibe:"Outdoors/Night", contexts:["OUTDOOR_NIGHT"], name:"Corset mini dress", pieces:"corset-structured mini dress", fabric:"structured knit with boning seam lines", footwear:"strappy heels"},
+            {vibe:"Outdoors/Night", contexts:["OUTDOOR_NIGHT"], name:"One-shoulder mini", pieces:"one-shoulder fitted mini dress", fabric:"smooth knit with shoulder tension lines and clean seams", footwear:"strappy heels"},
+            {vibe:"Outdoors/Night", contexts:["OUTDOOR_NIGHT"], name:"Leather-look mini", pieces:"fitted mini dress with leather-look texture", fabric:"matte faux-leather sheen with seam lines and realistic creases", footwear:"heels"},
+            {vibe:"Outdoors/Night", contexts:["OUTDOOR_NIGHT"], name:"Blazer mini dress", pieces:"tailored blazer mini dress", fabric:"woven suiting texture with sharp seams", footwear:"heels"},
+            {vibe:"Outdoors/Night", contexts:["OUTDOOR_NIGHT"], name:"Shimmer knit mini", pieces:"fitted mini dress with refined shimmer texture", fabric:"controlled highlight knit with realistic folds", footwear:"heels"},
+            {vibe:"Outdoors/Night", contexts:["OUTDOOR_NIGHT"], name:"Bodycon + mesh layer", pieces:"fitted mini dress with sheer mesh overlay layer", fabric:"dress smooth knit; mesh transparency and stretch", footwear:"heels"},
+            {vibe:"Outdoors/Night", contexts:["OUTDOOR_NIGHT"], name:"Structured mini + light coat", pieces:"tailored mini dress with a light coat draped over shoulders", fabric:"dress structured crepe; coat woven with collar folds", footwear:"heels"},
+            {vibe:"Outdoors/Night", contexts:["OUTDOOR_NIGHT"], name:"Mini skirt set", pieces:"snatched top and fitted mini skirt", fabric:"smooth knit top; skirt structured knit with seam lines", footwear:"heels"},
+            {vibe:"Outdoors/Night", contexts:["OUTDOOR_NIGHT"], name:"Night knit dress", pieces:"dense knit mini dress", fabric:"dense knit with clean seams and minimal creasing", footwear:"heels"},
+            {vibe:"Event/Social", contexts:["GENERIC_INDOOR_PUBLIC","NIGHTLIFE","WORKPLACE"], name:"Social mini dress", pieces:"polished fitted mini dress", fabric:"structured crepe-knit with crisp seams and minimal wrinkling", footwear:"sleek heels"},
+            {vibe:"Event/Social", contexts:["GENERIC_INDOOR_PUBLIC"], name:"Wrap mini dress", pieces:"wrap-style mini dress", fabric:"structured knit with wrap folds and seam lines", footwear:"sleek heels"},
+            {vibe:"Event/Social", contexts:["GENERIC_INDOOR_PUBLIC"], name:"Structured knit mini", pieces:"structured knit mini dress", fabric:"dense knit with seam shaping and controlled highlights", footwear:"sleek heels"},
+            {vibe:"Event/Social", contexts:["GENERIC_INDOOR_PUBLIC","NIGHTLIFE"], name:"Satin mini", pieces:"satin mini dress with thin straps", fabric:"satin-like sheen with realistic folds and edge piping", footwear:"sleek heels"},
+            {vibe:"Event/Social", contexts:["GENERIC_INDOOR_PUBLIC"], name:"One-shoulder mini", pieces:"one-shoulder fitted mini dress", fabric:"smooth knit with clean seams and tension lines", footwear:"sleek heels"},
+            {vibe:"Event/Social", contexts:["GENERIC_INDOOR_PUBLIC","NIGHTLIFE"], name:"Corset mini", pieces:"corset-structured mini dress", fabric:"structured knit with boning seam lines and crisp shape", footwear:"sleek heels"},
+            {vibe:"Event/Social", contexts:["GENERIC_INDOOR_PUBLIC"], name:"Pleated mini set", pieces:"snatched top and pleated mini skirt", fabric:"top smooth knit; skirt woven pleats with crisp edges", footwear:"sleek heels"},
+            {vibe:"Event/Social", contexts:["GENERIC_INDOOR_PUBLIC"], name:"Blazer mini dress", pieces:"tailored blazer mini dress", fabric:"woven suiting with sharp seams and button detail", footwear:"sleek heels"},
+            {vibe:"Event/Social", contexts:["GENERIC_INDOOR_PUBLIC"], name:"Shimmer texture mini", pieces:"fitted mini dress with refined shimmer texture", fabric:"controlled highlight knit, realistic folds, no glow effects", footwear:"sleek heels"},
+            {vibe:"Event/Social", contexts:["GENERIC_INDOOR_PUBLIC"], name:"Ruched mini dress", pieces:"ruched fitted mini dress", fabric:"stretch knit ruching with tension lines", footwear:"sleek heels"},
+            {vibe:"Event/Social", contexts:["WORKPLACE","GENERIC_INDOOR_PUBLIC"], name:"Sheath mini", pieces:"sleek sheath mini dress", fabric:"smooth structured knit with crisp seams", footwear:"sleek heels"},
+            {vibe:"Event/Social", contexts:["GENERIC_INDOOR_PUBLIC"], name:"Minimalist bodycon mini", pieces:"sleek bodycon mini dress", fabric:"smooth stretch knit with seam shaping and tension lines", footwear:"sleek heels"}
+        ];
+
+        // Night Lighting Bank
+        const NIGHT_LIGHTING_BANK = [
+            "Warm practical lamps (table lamp + ceiling spill)",
+            "Overhead indoor lighting (soft, realistic falloff)",
+            "Mixed indoor lighting (warm lamps + cool overhead)",
+            "TV glow + practical lamp fill (no haze)",
+            "Kitchen under-cabinet lighting + overhead fill",
+            "Bathroom vanity lights + overhead spill",
+            "Hallway sconce lighting + ambient spill",
+            "Window night spill (city glow) + practical lamp fill",
+            "Retail overhead lighting (after-hours vibe)",
+            "Office overhead lighting after-hours",
+            "Lobby practical lighting + overhead spill",
+            "Dim lounge practical lighting (warm pools of light)",
+            "Bar practical lighting + soft bounce fill",
+            "Night street lighting (streetlights + storefront spill)",
+            "Parking lot lighting (high poles, hard shadows)",
+            "Neon signage spill + streetlight mix (no readable text)",
+            "Car headlights spill + streetlight mix"
+        ];
+
+        // Initialize dropdowns
+        function initDropdowns() {
+            const shotSelect = document.getElementById('shotType');
+            const angleSelect = document.getElementById('angle');
             
-            // Check for explicit technical requests
-            if (lower.includes('macro') || lower.includes('detail') || lower.includes('texture') || lower.includes('close up')) {
-                return { type: 'detail', specs: technicalSpecs.detail };
-            }
+            SHOT_TYPES.forEach(shot => {
+                const opt = document.createElement('option');
+                opt.value = shot;
+                opt.textContent = shot;
+                shotSelect.appendChild(opt);
+            });
             
-            if (lower.includes('street') || lower.includes('candid') || lower.includes('walking') || lower.includes('urban')) {
-                return { type: 'street', specs: technicalSpecs.street };
-            }
-            
-            if (lower.includes('night') || lower.includes('dark') || lower.includes('neon') || lower.includes('evening')) {
-                return { type: 'night', specs: technicalSpecs.night };
-            }
-            
-            if (lower.includes('wide') || lower.includes('environmental') || lower.includes('context') || lower.includes('surroundings')) {
-                return { type: 'environmental', specs: technicalSpecs.environmental };
-            }
-            
-            if (lower.includes('architecture') || lower.includes('building') || lower.includes('interior design')) {
-                return { type: 'architecture', specs: technicalSpecs.architecture };
-            }
-            
-            if (lower.includes('running') || lower.includes('jumping') || lower.includes('dancing') || lower.includes('moving') || lower.includes('action')) {
-                return { type: 'action', specs: technicalSpecs.action };
-            }
-            
-            if (lower.includes('vintage') || lower.includes('retro') || lower.includes('film look') || lower.includes('nostalgic')) {
-                return { type: 'vintage', specs: technicalSpecs.vintage };
-            }
-            
-            if (lower.includes('documentary') || lower.includes('photojournalism') || lower.includes('reportage')) {
-                return { type: 'documentary', specs: technicalSpecs.documentary };
-            }
-            
-            // Default based on shot type
-            if (lower.includes('portrait') || lower.includes('face') || lower.includes('headshot')) {
-                return { type: 'portrait', specs: technicalSpecs.portrait };
-            }
-            
-            // Default to portrait for most lifestyle scenes
-            return { type: 'portrait', specs: technicalSpecs.portrait };
+            ANGLES.forEach(angle => {
+                const opt = document.createElement('option');
+                opt.value = angle;
+                opt.textContent = angle;
+                angleSelect.appendChild(opt);
+            });
         }
 
-        function getShotType(input, techContext) {
-            const lower = input.toLowerCase();
-            
-            if (lower.includes('close up') || lower.includes('extreme close') || lower.includes('macro')) return 'extreme close-up';
-            if (lower.includes('headshot') || lower.includes('portrait')) return 'head-and-shoulders portrait';
-            if (lower.includes('full body') || lower.includes('wide shot')) return 'full-body environmental shot';
-            if (lower.includes('medium shot') || lower.includes('waist up')) return 'medium shot';
-            
-            // Default based on technical context
-            if (techContext === 'street') return 'medium-wide shot';
-            if (techContext === 'detail') return 'extreme macro detail shot';
-            if (techContext === 'environmental') return 'wide environmental portrait';
-            
-            return 'medium close-up';
+        initDropdowns();
+
+        // Add night lighting options to dropdown
+        function addNightLightingOptions() {
+            const sel = document.getElementById("lighting");
+            if (!sel) return;
+
+            const existing = new Set([...sel.options].map(o => o.value));
+
+            const dividerLabel = "— Night lighting —";
+            if (!existing.has(dividerLabel)) {
+                const divOpt = document.createElement("option");
+                divOpt.value = dividerLabel;
+                divOpt.textContent = dividerLabel;
+                divOpt.disabled = true;
+                sel.appendChild(divOpt);
+                existing.add(dividerLabel);
+            }
+
+            NIGHT_LIGHTING_BANK.forEach(label => {
+                if (!existing.has(label)) {
+                    const opt = document.createElement("option");
+                    opt.value = label;
+                    opt.textContent = label;
+                    sel.appendChild(opt);
+                }
+            });
         }
 
-        // Rest of the database and functions remain the same...
-        const safeDB = {
-            fabrics: ['cotton', 'linen', 'wool', 'denim', 'velvet', 'silk', 'cashmere', 'tweed', 'corduroy', 'flannel'],
-            tops: ['t-shirt', 'blouse', 'sweater', 'hoodie', 'cardigan', 'turtleneck', 'button-up shirt', 'tank top', 'crop top', 'jacket'],
-            bottoms: ['jeans', 'trousers', 'slacks', 'shorts', 'skirt', 'joggers', 'leggings', 'corduroy pants', 'linen pants'],
-            shoes: ['sneakers', 'boots', 'loafers', 'sandals', 'heels', 'flats', 'oxfords'],
-            accessories: ['gold necklace', 'silver bracelet', 'leather watch', 'scarf', 'beanie', 'tote bag', 'backpack']
+        addNightLightingOptions();
+
+        // Preset configurations
+        const PRESETS = {
+            home: { vibe: 'Cozy Home', location: 'Home', lighting: 'Natural window light' },
+            gym: { vibe: 'Fitness/Gym', location: 'Gym', lighting: 'Gym overhead lighting' },
+            errands: { vibe: 'Errands/Retail', location: 'Indoor Public', lighting: 'Mixed indoor lighting' },
+            bathroom: { vibe: 'Lifestyle', location: 'Beauty/Selfcare', lighting: 'Bathroom vanity lights' },
+            nightlife: { vibe: 'Nightlife', location: 'Indoor Public', lighting: 'Warm practical lamps', time: 'Night' },
+            travel: { vibe: 'Travel/On-the-go', location: 'Vehicle/Transit', lighting: 'Mixed indoor lighting' }
         };
 
-        const locations = {
-            kitchen: {
-                name: 'modern home kitchen',
-                architecture: 'exposed wooden beams, marble countertops, stainless steel appliances',
-                props: ['wooden cutting board', 'ceramic bowl', 'copper cookware', 'herb plants on windowsill'],
-                lighting: 'warm overhead pendant lights, natural light from window'
-            },
-            living_room: {
-                name: 'cozy living room',
-                architecture: 'hardwood floors, built-in bookshelves, large windows',
-                props: ['velvet sofa', 'coffee table books', 'throw blanket', 'indoor plant'],
-                lighting: 'soft ambient lamplight, golden hour sun through curtains'
-            },
-            bedroom: {
-                name: 'minimalist bedroom',
-                architecture: 'platform bed, white walls, wooden headboard',
-                props: ['linen bedding', 'bedside lamp', 'woven rug', 'small desk'],
-                lighting: 'soft morning light, bedside reading lamp'
-            },
-            bathroom: {
-                name: 'modern bathroom',
-                architecture: 'subway tile walls, marble vanity, large mirror',
-                props: ['cotton towels', 'ceramic soap dish', 'potted eucalyptus', 'glass containers'],
-                lighting: 'bright vanity lighting, natural light from frosted window'
-            },
-            office: {
-                name: 'home office',
-                architecture: 'exposed brick, wooden desk, floating shelves',
-                props: ['leather chair', 'stack of books', 'coffee mug', 'desk lamp', 'notebook'],
-                lighting: 'desk lamp glow, window light'
-            },
-            outdoors: {
-                name: 'urban sidewalk',
-                architecture: 'concrete pavement, building facades, street lamps',
-                props: ['crossbody bag', 'coffee cup', 'phone in hand', 'sunglasses'],
-                lighting: 'overcast natural light, street shadows'
-            },
-            car: {
-                name: 'car interior',
-                architecture: 'leather seats, dashboard, steering wheel',
-                props: ['seatbelt', 'phone mount', 'water bottle', 'jacket on passenger seat'],
-                lighting: 'dashboard glow, street lights through window'
-            },
-            store: {
-                name: 'convenience store',
-                architecture: 'fluorescent ceiling lights, metal shelving, refrigerated cases',
-                props: ['shopping basket', 'product shelves', 'checkout counter', 'neon signs'],
-                lighting: 'harsh fluorescent overhead, cooler light temperature'
-            },
-            gym: {
-                name: 'fitness gym',
-                architecture: 'mirrored walls, rubber flooring, exposed ductwork',
-                props: ['water bottle', 'towel', 'exercise mat', 'dumbbells'],
-                lighting: 'bright overhead LEDs, even illumination'
-            },
-            coffee_shop: {
-                name: 'neighborhood coffee shop',
-                architecture: 'exposed brick, wooden tables, large windows',
-                props: ['ceramic mug', 'laptop', 'notebook', 'pastry case'],
-                lighting: 'warm ambient, soft window light'
-            }
-        };
-
-        function checkSafety(input) {
-            const lower = input.toLowerCase();
-            const found = [];
-            const cleaned = [];
+        function applyPreset(presetName) {
+            const preset = PRESETS[presetName];
+            if (!preset) return;
             
-            const words = input.split(/\s+/);
-            for (let word of words) {
-                const cleanWord = word.toLowerCase().replace(/[^a-z]/g, '');
-                if (bannedWords.includes(cleanWord)) {
-                    found.push(word);
-                } else {
-                    cleaned.push(word);
+            if (preset.vibe) document.getElementById('vibe').value = preset.vibe;
+            if (preset.location) document.getElementById('locationCategory').value = preset.location;
+            if (preset.lighting) document.getElementById('lighting').value = preset.lighting;
+            if (preset.time) document.getElementById('time').value = preset.time;
+        }
+
+        // Utility functions
+        function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+        
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function isEveningOrNight(timeOfDay) {
+            const t = (timeOfDay || "").toLowerCase();
+            return t.includes("evening") || t.includes("night") || t.includes("late");
+        }
+
+        function isUserLockedLighting(currentLighting) {
+            if (!currentLighting) return false;
+            const v = currentLighting.trim();
+            if (!v) return false;
+            if (v === "Mixed indoor lighting") return false;
+            if (v === "— Night lighting —") return false;
+            return true;
+        }
+
+        function pickNightLighting(context, vibe) {
+            const ctx = (context || "").toUpperCase();
+            const vb = (vibe || "").toUpperCase();
+
+            let pool = NIGHT_LIGHTING_BANK.slice();
+
+            if (ctx.includes("HOME_BATHROOM")) {
+                pool = pool.filter(x => /bathroom|vanity|overhead|lamp/i.test(x));
+            } else if (ctx.includes("HOME_KITCHEN")) {
+                pool = pool.filter(x => /kitchen|under-cabinet|overhead|lamp|mixed/i.test(x));
+            } else if (ctx.includes("NIGHTLIFE")) {
+                pool = pool.filter(x => /lounge|bar|dim|practical/i.test(x));
+            } else if (ctx.includes("OUTDOOR_NIGHT")) {
+                pool = pool.filter(x => /street|parking|neon|headlights/i.test(x));
+            } else if (ctx.includes("WORKPLACE") || ctx.includes("GENERIC_INDOOR_PUBLIC") || ctx.includes("RETAIL_ERRANDS")) {
+                pool = pool.filter(x => /office|lobby|retail|overhead|mixed|practical/i.test(x));
+            }
+
+            if (vb.includes("COZY")) {
+                pool = pool.filter(x => /warm|lamp|practical/i.test(x));
+            }
+
+            if (pool.length === 0) pool = ["Warm practical lamps (table lamp + ceiling spill)"];
+            return pool[Math.floor(Math.random() * pool.length)];
+        }
+
+        function pickLightingKeepDayAddNight({ timeOfDay, context, vibe, currentLighting, defaultDay="Natural window light" }) {
+            if (isUserLockedLighting(currentLighting)) return currentLighting;
+            if (isEveningOrNight(timeOfDay)) return pickNightLighting(context, vibe);
+            return (currentLighting && currentLighting.trim()) ? currentLighting : defaultDay;
+        }
+
+        // Context inference engine
+        function inferContext(sceneText, activityText, propsText, notesText, locationCategory, vibe, shotType, angle) {
+            const scores = {};
+            const combinedText = `${sceneText} ${activityText} ${propsText} ${notesText} ${shotType} ${angle}`.toLowerCase();
+            
+            // Score based on keywords
+            CONTEXT_KEYWORDS.forEach(({ctx, keys}) => {
+                scores[ctx] = 0;
+                keys.forEach(key => {
+                    if (combinedText.includes(key.toLowerCase())) scores[ctx]++;
+                });
+            });
+            
+            // Additional scoring for work domain
+            const workKeywords = ["desk","laptop","keyboard","monitor","documents","notebook","planner","mouse","phone stand","sticky notes","printer","workstation","office chair"];
+            const workVerbs = ["typing","reviewing documents","writing notes","email","planning","calendar"];
+            const workProps = ["notebook","pen","laptop","keyboard","phone stand","sticky notes","documents"];
+            
+            scores["HOME_OFFICE"] = scores["HOME_OFFICE"] || 0;
+            workKeywords.forEach(k => { if (combinedText.includes(k)) scores["HOME_OFFICE"] += 3; });
+            workVerbs.forEach(k => { if (activityText.toLowerCase().includes(k)) scores["HOME_OFFICE"] += 2; });
+            workProps.forEach(k => { if (propsText.toLowerCase().includes(k)) scores["HOME_OFFICE"] += 2; });
+            
+            // Home living bonus
+            const homeLivingKeys = ["couch","sofa","tv","coffee table","remote"];
+            scores["HOME_LIVING"] = scores["HOME_LIVING"] || 0;
+            homeLivingKeys.forEach(k => { if (combinedText.includes(k)) scores["HOME_LIVING"] += 1; });
+            
+            // Tie-breaker: if HOME_OFFICE >= HOME_LIVING, prefer HOME_OFFICE
+            if (scores["HOME_OFFICE"] && scores["HOME_LIVING"] && scores["HOME_OFFICE"] >= scores["HOME_LIVING"]) {
+                scores["HOME_OFFICE"] += 0.5;
+            }
+            
+            // Find max score
+            let maxScore = -1;
+            let bestContext = "GENERIC_INDOOR_PUBLIC";
+            
+            for (const [ctx, score] of Object.entries(scores)) {
+                if (score > maxScore) {
+                    maxScore = score;
+                    bestContext = ctx;
                 }
             }
             
-            return { 
-                isSafe: found.length === 0, 
-                violations: found,
-                cleanedInput: cleaned.join(' ')
+            // Map location category to context if no strong signal
+            if (maxScore < 2) {
+                const locMap = {
+                    'Home': 'HOME_LIVING',
+                    'Gym': 'GYM',
+                    'Beauty/Selfcare': 'BEAUTY_SELFCARE',
+                    'Workplace': 'WORKPLACE',
+                    'Vehicle/Transit': 'TRAVEL_TRANSIT',
+                    'Outdoor Public': 'OUTDOOR_DAY',
+                    'Indoor Public': 'GENERIC_INDOOR_PUBLIC'
+                };
+                if (locMap[locationCategory]) bestContext = locMap[locationCategory];
+            }
+            
+            return bestContext;
+        }
+
+        function autoSceneFromContext(context) {
+            const scenes = {
+                HOME_KITCHEN: "modern home kitchen with a central island, visible sink area, and realistic countertop clutter",
+                HOME_LIVING: "modern living room with a couch, coffee table, and a TV in the background",
+                HOME_BEDROOM: "bedroom with a made bed, nightstand, and a dresser with everyday items",
+                HOME_BATHROOM: "bathroom vanity area with a mirror, sink, and neatly placed toiletries",
+                HOME_OFFICE: "home desk setup with a laptop, notebook, and realistic work clutter",
+                GYM: "commercial gym floor near a rack and mirror wall with overhead lighting",
+                RETAIL_ERRANDS: "grocery store aisle with shelves and a cart nearby; no readable text",
+                TRAVEL_TRANSIT: "airport terminal seating area near a gate with luggage and corridor depth",
+                VEHICLE: "car interior passenger seat with dashboard and center console visible",
+                WORKPLACE: "office lobby or desk area with neutral surfaces and practical lighting",
+                BEAUTY_SELFCARE: "salon or vanity station with a mirror and countertop tools",
+                NIGHTLIFE: "upscale lounge interior with dim practical lighting and neon accents; no readable text",
+                OUTDOOR_DAY: "sidewalk or patio area in open shade with real street elements",
+                OUTDOOR_NIGHT: "street corner under streetlights with city lighting and reflections",
+                GENERIC_INDOOR_PUBLIC: "public indoor space with realistic background depth and practical lighting"
             };
+            return scenes[context] || scenes.GENERIC_INDOOR_PUBLIC;
         }
 
-        function detectLocation(input) {
-            const lower = input.toLowerCase();
-            
-            const keywords = {
-                kitchen: ['cooking', 'kitchen', 'dinner', 'stove', 'chef', 'food prep'],
-                living_room: ['couch', 'sofa', 'tv', 'netflix', 'lounging', 'living room'],
-                bedroom: ['bed', 'bedroom', 'sleeping', 'laying', 'pillow', 'morning'],
-                bathroom: ['bathroom', 'shower', 'bath', 'vanity', 'getting ready'],
-                office: ['office', 'desk', 'working', 'computer', 'zoom', 'meeting'],
-                outdoors: ['outside', 'street', 'walking', 'sidewalk', 'park'],
-                car: ['car', 'driving', 'delivery', 'uber', 'commute', 'vehicle'],
-                store: ['store', 'shopping', 'convenience', 'grocery', 'buying'],
-                gym: ['gym', 'workout', 'exercise', 'fitness', 'training'],
-                coffee_shop: ['coffee', 'cafe', 'starbucks', 'espresso', 'latte']
+        function getDomainFromContext(context) {
+            const domainMap = {
+                HOME_KITCHEN: 'COOKING_PREP',
+                HOME_LIVING: 'GENERIC',
+                HOME_BEDROOM: 'GENERIC',
+                HOME_BATHROOM: 'BATHROOM_HYGIENE',
+                HOME_OFFICE: 'WORK',
+                GYM: 'FITNESS',
+                RETAIL_ERRANDS: 'RETAIL',
+                TRAVEL_TRANSIT: 'TRAVEL',
+                VEHICLE: 'GENERIC',
+                WORKPLACE: 'WORK',
+                BEAUTY_SELFCARE: 'BEAUTY',
+                NIGHTLIFE: 'GENERIC',
+                OUTDOOR_DAY: 'GENERIC',
+                OUTDOOR_NIGHT: 'GENERIC',
+                GENERIC_INDOOR_PUBLIC: 'GENERIC'
             };
-            
-            for (const [loc, words] of Object.entries(keywords)) {
-                if (words.some(w => lower.includes(w))) return locations[loc];
-            }
-            
-            return locations.living_room;
+            return domainMap[context] || 'GENERIC';
         }
 
-        function parseSubject(input) {
-            const lower = input.toLowerCase();
+        function getCameraSettings(context, time, lighting) {
+            let shutter, iso, wb, lens, aperture;
             
-            let ethnicity = '';
-            let descriptors = [];
+            const isDay = ['Morning', 'Afternoon'].includes(time);
+            const isOutdoor = ['OUTDOOR_DAY', 'OUTDOOR_NIGHT'].includes(context);
+            const isGym = context === 'GYM';
             
-            if (lower.includes('ebony') || lower.includes('black')) {
-                ethnicity = 'Black';
-                descriptors.push('rich skin tone', 'natural hair texture');
-            } else if (lower.includes('latina') || lower.includes('hispanic')) {
-                ethnicity = 'Latina';
-                descriptors.push('warm complexion', 'dark hair');
-            } else if (lower.includes('asian')) {
-                ethnicity = 'Asian';
-                descriptors.push('smooth skin', 'dark hair');
-            } else if (lower.includes('white') || lower.includes('caucasian')) {
-                ethnicity = 'Caucasian';
-            } else if (lower.includes('middle eastern')) {
-                ethnicity = 'Middle Eastern';
-                descriptors.push('olive skin tone');
+            if (isGym) {
+                shutter = `1/${randInt(125, 320)}`;
+                iso = randInt(800, 2000);
+                wb = randInt(4000, 5200);
+            } else if (isOutdoor && isDay) {
+                shutter = `1/${randInt(500, 2000)}`;
+                iso = randInt(100, 400);
+                wb = randInt(5200, 6500);
+            } else if (isOutdoor && !isDay) {
+                shutter = `1/${randInt(80, 250)}`;
+                iso = randInt(800, 3200);
+                wb = randInt(2800, 4500);
+            } else if (isDay) {
+                shutter = `1/${randInt(80, 250)}`;
+                iso = randInt(200, 800);
+                wb = randInt(4500, 6000);
+            } else {
+                shutter = `1/${randInt(60, 160)}`;
+                iso = randInt(800, 3200);
+                wb = randInt(2800, 4500);
             }
             
-            let age = '';
-            if (lower.includes('young')) age = 'early 20s';
-            else if (lower.includes('middle aged')) age = 'mid-40s';
-            else if (lower.includes('older')) age = 'late 50s';
-            else age = 'late 20s';
+            // Lens based on shot type would need shot param, using random appropriate range
+            const lensRanges = [[24, 35], [35, 50], [50, 85], [85, 105]];
+            const range = rand(lensRanges);
+            lens = randInt(range[0], range[1]);
+            aperture = rand([1.8, 2.0, 2.2, 2.5, 2.8, 3.2, 3.5, 4.0]);
             
-            if (lower.includes('curvy') || lower.includes('thick')) descriptors.push('full-figured');
-            if (lower.includes('fit') || lower.includes('athletic')) descriptors.push('athletic build');
-            if (lower.includes('tall')) descriptors.push('tall stature');
-            if (lower.includes('petite')) descriptors.push('petite frame');
-            
-            descriptors.push('visible skin texture', 'natural pores', 'subtle imperfections');
-            
-            return { ethnicity, age, descriptors: descriptors.join(', ') };
+            return { shutter, iso, wb, lens, aperture };
         }
 
-        function getOutfit(location, input) {
-            const lower = input.toLowerCase();
-            
-            let formality = 'casual';
-            if (lower.includes('professional') || lower.includes('work')) formality = 'professional';
-            else if (lower.includes('lounge') || lower.includes('relax')) formality = 'loungewear';
-            else if (lower.includes('gym') || lower.includes('workout')) formality = 'athletic';
-            
-            const fabric = safeDB.fabrics[Math.floor(Math.random() * safeDB.fabrics.length)];
-            const top = safeDB.tops[Math.floor(Math.random() * safeDB.tops.length)];
-            const bottom = safeDB.bottoms[Math.floor(Math.random() * safeDB.bottoms.length)];
-            const accessory = safeDB.accessories[Math.floor(Math.random() * safeDB.accessories.length)];
-            
-            if (location.name.includes('kitchen')) {
-                return `${top} and ${bottom}, ${accessory}, practical for cooking`;
-            } else if (location.name.includes('gym')) {
-                return `athletic tank top and compression leggings, sports watch, workout appropriate`;
-            } else if (location.name.includes('office')) {
-                return `blouse and tailored slacks, minimal jewelry, professional attire`;
-            } else if (location.name.includes('bed')) {
-                return `oversized cotton t-shirt and lounge pants, comfortable sleepwear`;
+        function selectWardrobe(vibe, context, wardrobePreference, allowRandom) {
+            if (wardrobePreference.trim()) {
+                return {
+                    name: wardrobePreference,
+                    pieces: "custom selected pieces",
+                    fabric: "realistic fabric behavior with natural drape and texture",
+                    footwear: "appropriate footwear for the setting"
+                };
             }
             
-            return `${fabric} ${top} and ${bottom}, ${accessory}, ${formality} attire`;
+            if (!allowRandom) return null;
+            
+            // Find matching wardrobe
+            let matches = WARDROBE_LIBRARY.filter(w => 
+                w.vibe === vibe && w.contexts.includes(context)
+            );
+            
+            if (matches.length === 0) {
+                // Fallback logic
+                const isHome = ['HOME_KITCHEN', 'HOME_LIVING', 'HOME_BEDROOM', 'HOME_BATHROOM', 'HOME_OFFICE'].includes(context);
+                if (isHome) {
+                    matches = WARDROBE_LIBRARY.filter(w => w.vibe === 'Cozy Home');
+                    if (matches.length === 0) matches = WARDROBE_LIBRARY.filter(w => w.vibe === 'Lifestyle');
+                } else {
+                    matches = WARDROBE_LIBRARY.filter(w => w.vibe === 'Errands/Retail');
+                    if (matches.length === 0) matches = WARDROBE_LIBRARY.filter(w => w.vibe === 'Lifestyle');
+                }
+            }
+            
+            return rand(matches);
         }
 
-        function getAction(input) {
-            const lower = input.toLowerCase();
+        function selectActivity(context, time, userActivity) {
+            const activities = ACTIVITY_BANK[context] || ACTIVITY_BANK.GENERIC_INDOOR_PUBLIC;
             
-            const actions = [
-                { match: /cooking|preparing|making/i, result: 'preparing food, hands engaged in task' },
-                { match: /scrolling|phone|texting/i, result: 'scrolling on smartphone, focused on screen' },
-                { match: /watching|tv|netflix/i, result: 'watching television, relaxed posture' },
-                { match: /reading|book/i, result: 'reading book, engaged with pages' },
-                { match: /working|typing|computer/i, result: 'working at computer, concentrated expression' },
-                { match: /driving|steering/i, result: 'hands on steering wheel, focused on road' },
-                { match: /eating|drinking/i, result: 'eating, utensils in hand' },
-                { match: /shopping|browsing|deciding/i, result: 'browsing products, decision-making posture' },
-                { match: /exercising|working out|training/i, result: 'performing exercise, physical exertion' },
-                { match: /walking|commuting/i, result: 'walking with purpose, natural gait' }
+            if (userActivity.trim()) {
+                // Determine domain from user activity
+                let domain = 'GENERIC';
+                for (const [dom, keywords] of Object.entries(DOMAIN_KEYWORDS)) {
+                    if (keywords.some(k => userActivity.toLowerCase().includes(k))) {
+                        domain = dom;
+                        break;
+                    }
+                }
+                return { text: userActivity, type: domain, timeTags: ['Any'] };
+            }
+            
+            // Filter by time if not breakfast-appropriate times
+            const avoidBreakfast = ['Afternoon', 'Evening', 'Night', 'Late night'].includes(time);
+            let filtered = activities;
+            
+            if (avoidBreakfast) {
+                const breakfastWords = ['cereal', 'toast', 'coffee', 'breakfast'];
+                filtered = activities.filter(a => {
+                    const isBreakfast = breakfastWords.some(w => a.text.toLowerCase().includes(w));
+                    return !isBreakfast || a.timeTags.includes(time) || a.timeTags.includes('Any');
+                });
+            }
+            
+            // Filter by time tags
+            filtered = filtered.filter(a => 
+                a.timeTags.includes('Any') || a.timeTags.includes(time)
+            );
+            
+            if (filtered.length === 0) filtered = activities;
+            return rand(filtered);
+        }
+
+        function generateActions(activityType, isDetailed) {
+            const templates = ACTION_TEMPLATES[activityType] || ACTION_TEMPLATES.GENERIC;
+            const targets = ['chicken', 'vegetables', 'meat', 'fish', 'tofu'];
+            const liquids = ['milk', 'juice', 'water', 'sauce'];
+            
+            let primary = rand(templates.primary);
+            primary = primary.replace('{target}', rand(targets)).replace('{liquid}', rand(liquids));
+            
+            let secondary = rand(templates.secondary);
+            secondary = secondary.replace('{target}', rand(targets)).replace('{liquid}', rand(liquids));
+            
+            const micro = rand(MICRO_ACTIONS);
+            
+            if (isDetailed) {
+                return { primary, secondary, micro };
+            }
+            return { primary, secondary: '', micro };
+        }
+
+        function getProps(activityType, userProps) {
+            if (userProps.trim()) {
+                return userProps.split(',').map(p => p.trim()).join(', ');
+            }
+            const props = PROP_SETS[activityType] || PROP_SETS.GENERIC;
+            return props.join(', ');
+        }
+
+        function checkConsistency(context, activityType, pose) {
+            // Check for mismatches and rebuild if needed
+            const workContexts = ['HOME_OFFICE', 'WORKPLACE'];
+            const livingContexts = ['HOME_LIVING', 'HOME_BEDROOM'];
+            const kitchenContexts = ['HOME_KITCHEN'];
+            const gymContexts = ['GYM'];
+            const bathroomContexts = ['HOME_BATHROOM', 'BEAUTY_SELFCARE'];
+            
+            // If context is work but activity is lounging
+            if (workContexts.includes(context) && ['GENERIC'].includes(activityType)) {
+                // Check if pose suggests lounging
+                if (pose.includes('couch') || pose.includes('TV')) {
+                    return { type: 'WORK', needsRebuild: true };
+                }
+            }
+            
+            // If context is living but activity is work
+            if (livingContexts.includes(context) && activityType === 'WORK') {
+                return { type: 'GENERIC', needsRebuild: true };
+            }
+            
+            // Kitchen context checks
+            if (kitchenContexts.includes(context) && ['WORK', 'FITNESS'].includes(activityType)) {
+                return { type: 'COOKING_PREP', needsRebuild: true };
+            }
+            
+            // Gym context checks
+            if (gymContexts.includes(context) && ['COOKING_PREP', 'BATHROOM_HYGIENE'].includes(activityType)) {
+                return { type: 'FITNESS', needsRebuild: true };
+            }
+            
+            // Bathroom context checks
+            if (bathroomContexts.includes(context) && ['COOKING_PREP', 'FITNESS'].includes(activityType)) {
+                return { type: 'BEAUTY', needsRebuild: true };
+            }
+            
+            return { type: activityType, needsRebuild: false };
+        }
+
+        function generateSinglePrompt(options = {}) {
+            const {
+                lockedVibe = null,
+                lockedScene = null,
+                lockedActivity = null,
+                forcedShot = null,
+                forcedAngle = null,
+                refreshCamera = false,
+                refreshPose = false,
+                prevCamera = null,
+                prevPose = null
+            } = options;
+            
+            // Get inputs
+            const vibe = lockedVibe || document.getElementById('vibe').value;
+            const locationCategory = document.getElementById('locationCategory').value;
+            const time = document.getElementById('time').value;
+            const currentLighting = document.getElementById('lighting').value;
+            const shotType = forcedShot || document.getElementById('shotType').value;
+            const angle = forcedAngle || document.getElementById('angle').value;
+            const detail = document.getElementById('detail').value;
+            const isDetailed = detail === 'Detailed';
+            
+            const sceneText = document.getElementById('sceneText').value;
+            const activityText = document.getElementById('activityText').value;
+            const paletteText = document.getElementById('paletteText').value;
+            const propsText = document.getElementById('propsText').value;
+            const wardrobeText = document.getElementById('wardrobeText').value;
+            const notesText = document.getElementById('notesText').value;
+            
+            const allowRandomWardrobe = document.getElementById('randomWardrobe').checked;
+            const allowRandomLighting = document.getElementById('randomLighting').checked;
+            const strictRealism = document.getElementById('strictRealism').checked;
+            
+            // Infer context
+            const context = inferContext(sceneText, activityText, propsText, notesText, locationCategory, vibe, shotType, angle);
+            
+            // Get scene
+            let scene = lockedScene || sceneText.trim();
+            if (!scene) scene = autoSceneFromContext(context);
+            
+            // Get activity
+            const activity = lockedActivity ? { text: lockedActivity, type: getDomainFromContext(context) } : 
+                            selectActivity(context, time, activityText);
+            
+            // Check consistency
+            const consistency = checkConsistency(context, activity.type, '');
+            let finalActivityType = activity.type;
+            if (consistency.needsRebuild && !lockedActivity && !activityText.trim()) {
+                finalActivityType = consistency.type;
+            }
+            
+            // Get actions
+            let actions;
+            if (refreshPose && prevPose) {
+                // Generate new pose only
+                const poseBank = POSE_BANK[finalActivityType] || POSE_BANK.GENERIC;
+                const newPose = rand(poseBank);
+                actions = { ...prevPose, pose: newPose };
+            } else {
+                actions = generateActions(finalActivityType, isDetailed);
+                const poseBank = POSE_BANK[finalActivityType] || POSE_BANK.GENERIC;
+                actions.pose = rand(poseBank);
+            }
+            
+            // Get wardrobe
+            const wardrobe = selectWardrobe(vibe, context, wardrobeText, allowRandomWardrobe);
+            
+            // Get props
+            const props = getProps(finalActivityType, propsText);
+            
+            // Get camera settings
+            let camera;
+            if (refreshCamera && prevCamera) {
+                camera = getCameraSettings(context, time, currentLighting);
+            } else if (prevCamera && !refreshCamera) {
+                camera = prevCamera;
+            } else {
+                camera = getCameraSettings(context, time, currentLighting);
+            }
+            
+            // Pick lighting with night support
+            const lighting = pickLightingKeepDayAddNight({
+                timeOfDay: time,
+                context,
+                vibe,
+                currentLighting,
+                defaultDay: "Natural window light"
+            });
+            
+            // Build prompt
+            const header = `[HYPER-REAL PHOTO | 9:16 VERTICAL | CONTEXT: ${context} | VIBE: ${vibe} | DETAIL: ${detail}]`;
+            
+            const framing = `FRAMING + ANGLE:\n${shotType}, ${angle}, realistic human perspective.`;
+            
+            const actionSection = `ACTION:\nPose: ${actions.pose}\nPrimary: ${actions.primary}${isDetailed && actions.secondary ? '\nSecondary: ' + actions.secondary : ''}${isDetailed ? '\nMicro: ' + actions.micro : ''}\nHands are clearly performing the action with believable grip and finger placement.`;
+            
+            const wardrobeSection = wardrobe ? 
+                `WARDROBE:\n${wardrobe.name}. Wearing ${wardrobe.pieces}. Fabric behavior: ${wardrobe.fabric}. Footwear: ${wardrobe.footwear}.` :
+                `WARDROBE:\nModern casual attire appropriate for the setting.`;
+            
+            const envSection = `ENVIRONMENT:\nScene anchor: "${scene}"\nActivity anchor: "${activity.text}"${paletteText ? '\nBrand palette accents: "' + paletteText + '"' : ''}\nRelevant props present: ${props}`;
+            
+            const lightingSection = `LIGHTING:\n${lighting}.`;
+            
+            const cameraSection = `CAMERA:\nSony A7R IV, ${camera.lens}mm, f/${camera.aperture}, ISO ${camera.iso}, ${camera.shutter}, WB ${camera.wb}K.`;
+            
+            const textureSection = `TEXTURE + REALISM:\nVisible pores, natural skin texture, fabric weave, seams, realistic reflections/shadows.`;
+            
+            const constraints = [
+                'visible pores and natural skin texture',
+                'realistic fabric weave, seams, stitching',
+                'accurate shadows and reflections consistent with light sources',
+                'natural color science, no cinematic grading, no glow, no haze',
+                'no text anywhere, no logos, no watermarks',
+                'correct anatomy: five fingers per hand, natural joints, no warped limbs',
+                'no plastic skin, no beauty smoothing, no AI "airbrushed" look'
             ];
             
-            for (let action of actions) {
-                if (action.match.test(lower)) return action.result;
+            // Check if phone constraint needed
+            const needsPhoneConstraint = props.toLowerCase().includes('phone') || 
+                                        shotType.includes('phone-screen') || 
+                                        activity.text.toLowerCase().includes('phone');
+            
+            if (needsPhoneConstraint) {
+                constraints.push('phone screen facing subject; camera cannot read screen content; no readable text');
             }
             
-            return 'engaged in natural activity, candid posture';
+            const constraintsSection = `HARD CONSTRAINTS:\n${constraints.map(c => '• ' + c).join('\n')}`;
+            
+            const fullPrompt = `${header}\n\n${framing}\n\n${actionSection}\n\n${wardrobeSection}\n\n${envSection}\n\n${lightingSection}\n\n${cameraSection}\n\n${textureSection}\n\n${constraintsSection}`;
+            
+            const promptWithoutHeader = `${framing}\n\n${actionSection}\n\n${wardrobeSection}\n\n${envSection}\n\n${lightingSection}\n\n${cameraSection}\n\n${textureSection}\n\n${constraintsSection}`;
+            
+            return {
+                full: fullPrompt,
+                withoutHeader: promptWithoutHeader,
+                badge: `${context} | ${vibe} | ${detail} | ${shotType} | ${angle}`,
+                camera,
+                actions
+            };
         }
 
-        function buildPrompt() {
-            const input = document.getElementById('input').value.trim();
-            if (!input) return;
+        let generatedPrompts = [];
 
-            const safety = checkSafety(input);
-            const location = detectLocation(input);
-            const subject = parseSubject(input);
-            const outfit = getOutfit(location, input);
-            const action = getAction(input);
+        function generatePrompts() {
+            const batchSize = parseInt(document.getElementById('batch').value);
+            const lockScene = document.getElementById('lockScene').checked;
+            const lockActivity = document.getElementById('lockActivity').checked;
+            const lockVibe = document.getElementById('lockVibe').checked;
             
-            // NEW: Smart technical detection
-            const techContext = detectTechnicalContext(input);
-            const shotType = getShotType(input, techContext.type);
-            const specs = techContext.specs;
+            const sceneText = document.getElementById('sceneText').value;
+            const activityText = document.getElementById('activityText').value;
+            const vibe = document.getElementById('vibe').value;
             
-            // Construct structured prompt
-            let prompt = `A hyper-realistic, candid ${shotType} of a ${subject.age} ${subject.ethnicity} woman with ${subject.descriptors}. `;
+            // Generate unique shots and angles for batch
+            let shots = [document.getElementById('shotType').value];
+            let angles = [document.getElementById('angle').value];
             
-            prompt += `The character is wearing ${outfit}. `;
-            
-            prompt += `The scene is set in a ${location.name} with ${location.architecture} to establish scale and realism. `;
-            
-            prompt += `Props visible: ${location.props.slice(0, 3).join(', ')}. `;
-            
-            prompt += `The subject is ${action}. `;
-            
-            prompt += `Lighting: ${location.lighting} creating realistic shadows and subsurface scattering on skin. `;
-            
-            // Technical specs based on context
-            prompt += `Technical Specs: Shot on ${specs.camera}, ${specs.lens}, ${specs.film}, ${specs.style}, aperture ${specs.aperture}, ${specs.focus}, ${specs.grain}, highly detailed, 8k resolution, photorealistic.`;
-            
-            // Display
-            document.getElementById('results').classList.remove('hidden');
-            document.getElementById('output').value = prompt;
-            
-            // Show elements
-            document.getElementById('elementsList').innerHTML = `
-                <div><span class="text-gray-500">Subject:</span> ${subject.age} ${subject.ethnicity} woman</div>
-                <div><span class="text-gray-500">Location:</span> ${location.name}</div>
-                <div><span class="text-gray-500">Action:</span> ${action}</div>
-                <div><span class="text-gray-500">Outfit:</span> ${outfit}</div>
-            `;
-            
-            // Show technical choices
-            document.getElementById('techList').innerHTML = `
-                <div class="tech-tag px-2 py-1 rounded inline-block mb-1">${specs.camera}</div>
-                <div class="text-cyan-400">${specs.lens}</div>
-                <div class="text-gray-400">${specs.why}</div>
-                <div class="text-gray-500 mt-2">Shot: ${shotType}</div>
-                <div class="text-gray-500">Style: ${specs.style}</div>
-            `;
-            
-            // Show safety status
-            if (safety.isSafe) {
-                document.getElementById('safetyList').innerHTML = `
-                    <div>✓ No violations detected</div>
-                    <div>✓ All fabrics appropriate</div>
-                    <div>✓ Context-appropriate attire</div>
-                `;
-            } else {
-                document.getElementById('safetyList').innerHTML = `
-                    <div class="text-yellow-400">⚠ Filtered: ${safety.violations.join(', ')}</div>
-                    <div>✓ Replaced with safe alternatives</div>
-                `;
+            if (batchSize > 1) {
+                const shuffledShots = shuffleArray(SHOT_TYPES);
+                const shuffledAngles = shuffleArray(ANGLES);
+                shots = shuffledShots.slice(0, batchSize);
+                angles = shuffledAngles.slice(0, batchSize);
             }
+            
+            // Determine locked values
+            const lockedScene = lockScene && sceneText.trim() ? sceneText : null;
+            const lockedActivity = lockActivity && activityText.trim() ? activityText : null;
+            const lockedVibe = lockVibe ? vibe : null;
+            
+            // Get initial activity if locking
+            let fixedActivity = null;
+            if (lockActivity && !activityText.trim()) {
+                const locationCategory = document.getElementById('locationCategory').value;
+                const context = inferContext(sceneText, activityText, '', '', locationCategory, vibe, shots[0], angles[0]);
+                const time = document.getElementById('time').value;
+                fixedActivity = selectActivity(context, time, '');
+            }
+            
+            const newPrompts = [];
+            for (let i = 0; i < batchSize; i++) {
+                const prompt = generateSinglePrompt({
+                    lockedVibe,
+                    lockedScene,
+                    lockedActivity: lockedActivity || (fixedActivity ? fixedActivity.text : null),
+                    forcedShot: shots[i],
+                    forcedAngle: angles[i]
+                });
+                newPrompts.push(prompt);
+            }
+            
+            // Add to history, keep last 20
+            generatedPrompts = [...newPrompts, ...generatedPrompts].slice(0, 20);
+            renderPrompts();
         }
 
-        function copyToClipboard() {
-            const copyText = document.getElementById("output");
-            const copyBtn = document.getElementById("copyBtn");
+        function randomizeAll() {
+            // Reroll all auto elements while preserving user text
+            generatePrompts();
+        }
+
+        function refreshCameraOnly() {
+            if (generatedPrompts.length === 0) {
+                showToast('No prompts to refresh');
+                return;
+            }
             
-            copyText.select();
-            copyText.setSelectionRange(0, 99999);
+            const newPrompts = generatedPrompts.map(p => {
+                const refreshed = generateSinglePrompt({
+                    refreshCamera: true,
+                    prevCamera: p.camera,
+                    prevPose: p.actions
+                });
+                refreshed.actions = p.actions; // Keep original pose
+                return refreshed;
+            });
             
-            navigator.clipboard.writeText(copyText.value).then(function() {
-                copyBtn.innerHTML = `<span class="text-green-400">Copied!</span>`;
-                setTimeout(() => {
-                    copyBtn.innerHTML = `
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
-                        </svg>
-                        Copy
-                    `;
-                }, 2000);
+            generatedPrompts = newPrompts;
+            renderPrompts();
+            showToast('Camera settings refreshed');
+        }
+
+        function refreshPoseOnly() {
+            if (generatedPrompts.length === 0) {
+                showToast('No prompts to refresh');
+                return;
+            }
+            
+            const newPrompts = generatedPrompts.map(p => {
+                const refreshed = generateSinglePrompt({
+                    refreshPose: true,
+                    prevCamera: p.camera,
+                    prevPose: p.actions
+                });
+                refreshed.camera = p.camera; // Keep original camera
+                return refreshed;
+            });
+            
+            generatedPrompts = newPrompts;
+            renderPrompts();
+            showToast('Poses refreshed');
+        }
+
+        function clearAll() {
+            generatedPrompts = [];
+            renderPrompts();
+            
+            // Clear text inputs
+            document.getElementById('sceneText').value = '';
+            document.getElementById('activityText').value = '';
+            document.getElementById('paletteText').value = '';
+            document.getElementById('propsText').value = '';
+            document.getElementById('wardrobeText').value = '';
+            document.getElementById('notesText').value = '';
+        }
+
+        function renderPrompts() {
+            const container = document.getElementById('outputContainer');
+            const countEl = document.getElementById('promptCount');
+            
+            countEl.textContent = `${generatedPrompts.length} prompt${generatedPrompts.length !== 1 ? 's' : ''}`;
+            
+            if (generatedPrompts.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-gray-500 py-12">
+                        <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <p>Click "Generate Prompts" to create hyper-realistic photo prompts</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = generatedPrompts.map((prompt, index) => `
+                <div class="bg-gray-900 rounded-lg border border-gray-700 p-4 space-y-3" data-index="${index}">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <span class="text-xs bg-emerald-900 text-emerald-300 px-2 py-1 rounded font-mono">${prompt.badge}</span>
+                        <span class="text-xs text-gray-500">#${index + 1}</span>
+                    </div>
+                    <div class="code-block text-sm text-gray-300 bg-gray-950 p-3 rounded border border-gray-800 overflow-x-auto">${escapeHtml(prompt.full)}</div>
+                    <div class="flex gap-2">
+                        <button class="copy-full-btn flex-1 bg-gray-700 hover:bg-gray-600 text-white text-sm py-2 px-3 rounded transition flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            Copy Full
+                        </button>
+                        <button class="copy-noheader-btn flex-1 bg-gray-700 hover:bg-gray-600 text-white text-sm py-2 px-3 rounded transition flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                            Copy Without Header
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Add event listeners for copy buttons
+            document.querySelectorAll('.copy-full-btn').forEach((btn, idx) => {
+                btn.addEventListener('click', () => copyText(generatedPrompts[idx].full));
+            });
+            
+            document.querySelectorAll('.copy-noheader-btn').forEach((btn, idx) => {
+                btn.addEventListener('click', () => copyText(generatedPrompts[idx].withoutHeader));
             });
         }
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        async function copyText(text) {
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                    showToast('Copied');
+                } else {
+                    // Fallback
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    textarea.style.position = 'fixed';
+                    textarea.style.left = '-9999px';
+                    textarea.style.top = '0';
+                    document.body.appendChild(textarea);
+                    textarea.focus();
+                    textarea.select();
+                    const success = document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    showToast(success ? 'Copied' : 'Copy failed');
+                }
+            } catch (err) {
+                showToast('Copy failed');
+            }
+        }
+
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast bg-emerald-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium';
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+
+        // Set copyright year
+        document.getElementById('copyrightYear').textContent = new Date().getFullYear();
     </script>
 </body>
 </html>
